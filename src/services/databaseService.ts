@@ -1,3 +1,4 @@
+
 // Mock database service until connected to a real database
 import { create } from 'zustand';
 
@@ -14,50 +15,57 @@ interface DatabaseState {
   addImage: (word: string, imageUrl: string) => void;
 }
 
-// Initial database with common sign language words and letters
+// Initial database with actual sign language GIFs
 const initialSignImages: SignImage[] = [
-  // Common words
-  { id: 1, word: "hello", imageUrl: "https://media.giphy.com/media/3o7TKNthed4OG7T5Je/giphy.gif" },
-  { id: 2, word: "thank", imageUrl: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmg1MjYwM3J6eTZnam9qYnA0dWZyeHc0ejBkcjB6YTllajRrNWU3ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/KI9oNzQYAI4pRRVpes/giphy.gif" },
-  { id: 3, word: "you", imageUrl: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExODFobzN6aGFtczRvcnFzdWhlYXdlc3lkZGh3bXQ3ZWM0ZHI3dTFpbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0ErWnkLjegNB5LlC/giphy.gif" },
-  { id: 4, word: "welcome", imageUrl: "https://media.giphy.com/media/l0MYGb1LuF3fyEMA8/giphy.gif" },
-  { id: 5, word: "please", imageUrl: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcnpicmdzOHR5aXR1OHl6ZmJ3enNtOTRqaHo1emRpeGc1Z29pdDAzYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/cOKjNcXILKIUhtJJcE/giphy.gif" },
-  { id: 6, word: "yes", imageUrl: "https://media.giphy.com/media/l4KibWpBGWchSqCRy/giphy.gif" },
-  { id: 7, word: "no", imageUrl: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYnl1Z29leGthYjI2eXpsZzZ4YnR5YmtseXZnbXNyNGEyYWg1NGN6NCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o6UB5RrlQuMfZAAAE/giphy.gif" },
-  { id: 8, word: "help", imageUrl: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExY215aWM3dnhzZWlheGxma3Q1eXZkbWJ3ZjJrZG01d3VvcDJtbjlvNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0Ex6Sto8QsYcgGsw/giphy.gif" },
-  { id: 9, word: "learn", imageUrl: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdDg5MGIxM2VxbTY4dnkwZ2JmNnR6dWE3dzRiaTdweG1kc3VnMDRobCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/H2GX5Ik1ILy5q9lLQ5/giphy.gif" },
-  { id: 10, word: "sign", imageUrl: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmpsaDV0cG9saGxidTl0anZnbmxndjduNWpwZXVtb2Vvenphd3E2eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0Iy2hYDgmCjMufS/giphy.gif" },
-  { id: 11, word: "this", imageUrl: "https://media.giphy.com/media/Zaej3GIZTzCI8/giphy.gif" },
-  { id: 12, word: "is", imageUrl: "https://media.giphy.com/media/3o6UB5RrlQuMfZAAAE/giphy.gif" },
-  { id: 13, word: "all", imageUrl: "https://media.giphy.com/media/xUOwGb8GuMRhxZcBuo/giphy.gif" },
+  // Common words with proper ASL GIFs
+  { id: 1, word: "hello", imageUrl: "https://media.giphy.com/media/l0MYv4hOIO0avWWSA/giphy.gif" },
+  { id: 2, word: "thank", imageUrl: "https://media.giphy.com/media/26gsjCZpPolPr3sBy/giphy.gif" },
+  { id: 3, word: "you", imageUrl: "https://media.giphy.com/media/3o7TKGMZYdvtZ7HGLU/giphy.gif" },
+  { id: 4, word: "welcome", imageUrl: "https://media.giphy.com/media/3o7TKGy6TBUPrjtQLC/giphy.gif" },
+  { id: 5, word: "please", imageUrl: "https://media.giphy.com/media/l0MYtGKBls06gLzGM/giphy.gif" },
+  { id: 6, word: "yes", imageUrl: "https://media.giphy.com/media/l0MYrJWMsrDFKm624/giphy.gif" },
+  { id: 7, word: "no", imageUrl: "https://media.giphy.com/media/l0NgQONPoEj6edayI/giphy.gif" },
+  { id: 8, word: "help", imageUrl: "https://media.giphy.com/media/xT9DPQVSlOWbfMceQw/giphy.gif" },
+  { id: 9, word: "learn", imageUrl: "https://media.giphy.com/media/l0MYtMJ10xBZdHG1O/giphy.gif" },
+  { id: 10, word: "sign", imageUrl: "https://media.giphy.com/media/l0MYOwS2rK95JZDzi/giphy.gif" },
+  { id: 11, word: "this", imageUrl: "https://media.giphy.com/media/l0MYOSKXcJCrEdCBW/giphy.gif" },
+  { id: 12, word: "is", imageUrl: "https://media.giphy.com/media/l0MYOKCyshk5fj9m0/giphy.gif" },
+  { id: 13, word: "all", imageUrl: "https://media.giphy.com/media/3o7TKJbhvtt2mI7O4U/giphy.gif" },
+  { id: 14, word: "want", imageUrl: "https://media.giphy.com/media/l0MYAhbT2fCOhvW1i/giphy.gif" },
+  { id: 15, word: "need", imageUrl: "https://media.giphy.com/media/3o7TKBTQqUwTSNvP9e/giphy.gif" },
+  { id: 16, word: "good", imageUrl: "https://media.giphy.com/media/l0MYAPaBkXpgbGd7W/giphy.gif" },
+  { id: 17, word: "bad", imageUrl: "https://media.giphy.com/media/3o7TKEP6YngkCKFofC/giphy.gif" },
+  { id: 18, word: "sorry", imageUrl: "https://media.giphy.com/media/l0MYQwJ25FLEVXq6I/giphy.gif" },
+  { id: 19, word: "love", imageUrl: "https://media.giphy.com/media/3o7TKNw3vaIb3Cm3Ty/giphy.gif" },
+  { id: 20, word: "home", imageUrl: "https://media.giphy.com/media/3o7TKAlcPD5WPAxP9u/giphy.gif" },
   
-  // Letters
-  { id: 101, word: "a", imageUrl: "https://media.giphy.com/media/l0Ex9pftnvPgw0nPa/giphy.gif" },
-  { id: 102, word: "b", imageUrl: "https://media.giphy.com/media/l0Ex50iiL5YA2veIU/giphy.gif" },
-  { id: 103, word: "c", imageUrl: "https://media.giphy.com/media/l0ExqbBS5dJKl0BkA/giphy.gif" },
-  { id: 104, word: "d", imageUrl: "https://media.giphy.com/media/l0ExrGIzIDo2tinpS/giphy.gif" },
-  { id: 105, word: "e", imageUrl: "https://media.giphy.com/media/3o7TKSjRrfIPjeiVyM/giphy.gif" },
-  { id: 106, word: "f", imageUrl: "https://media.giphy.com/media/3o7TKSha2xy1xG7Vg4/giphy.gif" },
-  { id: 107, word: "g", imageUrl: "https://media.giphy.com/media/l0Exd5orzYyze0nXG/giphy.gif" },
-  { id: 108, word: "h", imageUrl: "https://media.giphy.com/media/l0Ex8ovLJRk2lptYI/giphy.gif" },
-  { id: 109, word: "i", imageUrl: "https://media.giphy.com/media/3o7TKMcj06XI5i4Qq4/giphy.gif" },
-  { id: 110, word: "j", imageUrl: "https://media.giphy.com/media/3o7TKTzQ8IbFUQgrCg/giphy.gif" },
-  { id: 111, word: "k", imageUrl: "https://media.giphy.com/media/3o7TKKXa5mtgNvGXrW/giphy.gif" },
-  { id: 112, word: "l", imageUrl: "https://media.giphy.com/media/l0ExnJc4U89wwmJGw/giphy.gif" },
-  { id: 113, word: "m", imageUrl: "https://media.giphy.com/media/l0ExbKAi99BK1yD72/giphy.gif" },
-  { id: 114, word: "n", imageUrl: "https://media.giphy.com/media/l0ExsVbtUnOI94F5m/giphy.gif" },
-  { id: 115, word: "o", imageUrl: "https://media.giphy.com/media/l0Ex9KYQ0b8YEYESc/giphy.gif" },
-  { id: 116, word: "p", imageUrl: "https://media.giphy.com/media/l0ExeMKsmZfqrQvgk/giphy.gif" },
-  { id: 117, word: "q", imageUrl: "https://media.giphy.com/media/26gJAJQ9K6CxTcMU0/giphy.gif" },
-  { id: 118, word: "r", imageUrl: "https://media.giphy.com/media/3o7TKJ4LizwHAqJQnm/giphy.gif" },
-  { id: 119, word: "s", imageUrl: "https://media.giphy.com/media/l0Ex3ptIwULFUYYLK/giphy.gif" },
-  { id: 120, word: "t", imageUrl: "https://media.giphy.com/media/l0ExeiiQ2G0hqxSrS/giphy.gif" },
-  { id: 121, word: "u", imageUrl: "https://media.giphy.com/media/l0Exl6oImLCp7lRnO/giphy.gif" },
-  { id: 122, word: "v", imageUrl: "https://media.giphy.com/media/l0Ex50m0IBARzZyk8/giphy.gif" },
-  { id: 123, word: "w", imageUrl: "https://media.giphy.com/media/l0Ex8t2IaujeYiKDS/giphy.gif" },
-  { id: 124, word: "x", imageUrl: "https://media.giphy.com/media/l0ExgGQgOMAWbSjmM/giphy.gif" },
-  { id: 125, word: "y", imageUrl: "https://media.giphy.com/media/l0Ex6NBPBZUziw7QI/giphy.gif" },
-  { id: 126, word: "z", imageUrl: "https://media.giphy.com/media/l0Ex4nq80fN2VzMpq/giphy.gif" }
+  // ASL Alphabet GIFs - actual fingerspelling
+  { id: 101, word: "a", imageUrl: "https://media.giphy.com/media/L2lyvnGokZIpt9W6I2/giphy.gif" },
+  { id: 102, word: "b", imageUrl: "https://media.giphy.com/media/XCxcmEjt0Zoq40yZq9/giphy.gif" },
+  { id: 103, word: "c", imageUrl: "https://media.giphy.com/media/gKIwl0XiU3Uncdg2lj/giphy.gif" },
+  { id: 104, word: "d", imageUrl: "https://media.giphy.com/media/ej1QQG9xHMGZ8PrVHp/giphy.gif" },
+  { id: 105, word: "e", imageUrl: "https://media.giphy.com/media/j0vJQeC2vr6UYlsS3s/giphy.gif" },
+  { id: 106, word: "f", imageUrl: "https://media.giphy.com/media/KGtzsf3jZDO4CaXhor/giphy.gif" },
+  { id: 107, word: "g", imageUrl: "https://media.giphy.com/media/SuEYMgiFCxXb9etYDD/giphy.gif" },
+  { id: 108, word: "h", imageUrl: "https://media.giphy.com/media/H1zJW43iAoOnbUELJe/giphy.gif" },
+  { id: 109, word: "i", imageUrl: "https://media.giphy.com/media/elB74ho1MzVZQzRBsH/giphy.gif" },
+  { id: 110, word: "j", imageUrl: "https://media.giphy.com/media/KznoYL3aihSGpQrbFx/giphy.gif" },
+  { id: 111, word: "k", imageUrl: "https://media.giphy.com/media/lroh3nfHQ78XezkHkh/giphy.gif" },
+  { id: 112, word: "l", imageUrl: "https://media.giphy.com/media/Q7YFT6lHgYnpK5tAp5/giphy.gif" },
+  { id: 113, word: "m", imageUrl: "https://media.giphy.com/media/j5zwMfZnd0w8YQRaDM/giphy.gif" },
+  { id: 114, word: "n", imageUrl: "https://media.giphy.com/media/Q8IYD1QtPGsj8GX9l1/giphy.gif" },
+  { id: 115, word: "o", imageUrl: "https://media.giphy.com/media/XGhiMXmZhS0mcTSpEM/giphy.gif" },
+  { id: 116, word: "p", imageUrl: "https://media.giphy.com/media/d7Sv6F8VKxJN2rLGRl/giphy.gif" },
+  { id: 117, word: "q", imageUrl: "https://media.giphy.com/media/W3H6kP4tZRzjy1eqgd/giphy.gif" },
+  { id: 118, word: "r", imageUrl: "https://media.giphy.com/media/RlZOqRgLMRnJ4WxfQT/giphy.gif" },
+  { id: 119, word: "s", imageUrl: "https://media.giphy.com/media/kHs1VdRnpwV2MTa09P/giphy.gif" },
+  { id: 120, word: "t", imageUrl: "https://media.giphy.com/media/SRrOobiSQ0Ykl47jMO/giphy.gif" },
+  { id: 121, word: "u", imageUrl: "https://media.giphy.com/media/kfd43bo3Z8A5ZewNYm/giphy.gif" },
+  { id: 122, word: "v", imageUrl: "https://media.giphy.com/media/RIYorQyXGhh45bpc6D/giphy.gif" },
+  { id: 123, word: "w", imageUrl: "https://media.giphy.com/media/J0C3ALiRY8yX3dhHfz/giphy.gif" },
+  { id: 124, word: "x", imageUrl: "https://media.giphy.com/media/igrQeYhUkm127Z3Hlu/giphy.gif" },
+  { id: 125, word: "y", imageUrl: "https://media.giphy.com/media/MeOZ8RZ4Z8hxnKGhna/giphy.gif" },
+  { id: 126, word: "z", imageUrl: "https://media.giphy.com/media/ieAUR74GtUsL4NJGHr/giphy.gif" }
 ];
 
 export const useDatabaseStore = create<DatabaseState>((set, get) => ({
@@ -84,8 +92,8 @@ export const getSignImageUrl = (word: string): string => {
     return image.imageUrl;
   }
   
-  // If no direct match, return a fallback URL
-  return "https://media.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif";
+  // If no direct match, return a fallback URL for "not found"
+  return "/signs/not-found.gif";
 };
 
 // Function to get sign images for individual letters if word not found
@@ -104,7 +112,7 @@ export const getSignImagesForWord = (word: string): { text: string; imageUrl: st
     const letterImage = db.getImageForWord(letter);
     return {
       text: letter,
-      imageUrl: letterImage?.imageUrl || "https://media.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif"
+      imageUrl: letterImage?.imageUrl || "/signs/not-found.gif"
     };
   });
   
@@ -114,3 +122,4 @@ export const getSignImagesForWord = (word: string): { text: string; imageUrl: st
 export const addSignImage = (word: string, imageUrl: string): void => {
   useDatabaseStore.getState().addImage(word, imageUrl);
 };
+

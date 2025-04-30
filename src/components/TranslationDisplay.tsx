@@ -103,7 +103,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
                   onError={(e) => {
                     console.error("Image load error:", e);
                     // Set fallback image on error
-                    (e.target as HTMLImageElement).src = "https://media.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif";
+                    (e.target as HTMLImageElement).src = "/signs/not-found.gif";
                   }}
                 />
               </div>
@@ -134,7 +134,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
                         loading="lazy"
                         onError={(e) => {
                           // Set fallback image on error
-                          (e.target as HTMLImageElement).src = "https://media.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif";
+                          (e.target as HTMLImageElement).src = "/signs/not-found.gif";
                         }}
                       />
                     </div>
