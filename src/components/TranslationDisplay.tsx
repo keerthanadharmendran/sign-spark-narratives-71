@@ -94,7 +94,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
           {/* Current active sign */}
           {result.words.length > 0 && (
             <div className="mb-8 flex flex-col items-center">
-              <div className="w-64 h-64 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200">
+              <div className="w-75 h-75 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200">
                 <img 
                   src={result.words[currentIndex].imageUrl} 
                   alt={`Sign for "${result.words[currentIndex].text}"`}
