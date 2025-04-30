@@ -2,13 +2,12 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../services/authService';
-import { translateText, translateParagraph } from '../services/translationService';
+import { translateToSignLanguage } from '../services/translationService';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowRight, LogIn, Languages, User, Mic, MicOff } from 'lucide-react';
+import { ArrowRight, LogIn, Languages, Mic, MicOff } from 'lucide-react';
 import { TranslationDisplay } from '@/components/TranslationDisplay';
 import { SpeechRecognizer } from '@/components/SpeechRecognizer';
 
@@ -18,7 +17,6 @@ const Translator: React.FC = () => {
   const { toast } = useToast();
   
   const [inputText, setInputText] = useState('');
-  const [translationMode, setTranslationMode] = useState<'word' | 'paragraph'>('word');
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationResult, setTranslationResult] = useState<{
     words: { text: string; imageUrl: string }[];
@@ -27,10 +25,16 @@ const Translator: React.FC = () => {
 
   const handleSpeechInput = (transcript: string) => {
     setInputText(transcript);
+    // Auto-translate when speech input is received
+    if (transcript.trim()) {
+      handleTranslate(transcript);
+    }
   };
 
-  const handleTranslate = async () => {
-    if (!inputText.trim()) {
+  const handleTranslate = async (text?: string) => {
+    const textToTranslate = text || inputText;
+    
+    if (!textToTranslate.trim()) {
       toast({
         title: "Empty input",
         description: "Please enter some text or speak to translate.",
@@ -41,9 +45,8 @@ const Translator: React.FC = () => {
 
     setIsTranslating(true);
     try {
-      const result = translationMode === 'word' 
-        ? await translateText(inputText)
-        : await translateParagraph(inputText);
+      console.log("Translating text:", textToTranslate);
+      const result = await translateToSignLanguage(textToTranslate);
       
       setTranslationResult(result);
       
@@ -93,83 +96,44 @@ const Translator: React.FC = () => {
           <section className="text-center">
             <h2 className="text-3xl font-bold mb-2">Sign Language Translator</h2>
             <p className="text-muted-foreground">
-              Speak or enter text below to translate into American Sign Language (ASL)
+              Speak or enter text to translate into American Sign Language (ASL)
             </p>
           </section>
 
           <Card className="bg-white shadow-lg">
             <CardContent className="p-6">
-              <Tabs defaultValue="word" onValueChange={(v) => setTranslationMode(v as 'word' | 'paragraph')}>
-                <TabsList className="grid grid-cols-2 mb-6">
-                  <TabsTrigger value="word">Word Translation</TabsTrigger>
-                  <TabsTrigger value="paragraph">Paragraph Translation</TabsTrigger>
-                </TabsList>
+              <div className="space-y-4">
+                <div className="relative">
+                  <Textarea 
+                    placeholder="Enter text or click the microphone to speak..." 
+                    className="min-h-[100px] pr-12"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                  />
+                  <SpeechRecognizer 
+                    onTranscript={handleSpeechInput} 
+                    isListening={isListening} 
+                    setIsListening={setIsListening} 
+                  />
+                </div>
                 
-                <TabsContent value="word">
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <Textarea 
-                        placeholder="Enter a word or short phrase to translate or click the microphone to speak..." 
-                        className="min-h-[100px] pr-12"
-                        value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
-                      />
-                      <SpeechRecognizer 
-                        onTranscript={handleSpeechInput} 
-                        isListening={isListening} 
-                        setIsListening={setIsListening} 
-                      />
-                    </div>
-                    
-                    <Button 
-                      onClick={handleTranslate} 
-                      disabled={isTranslating}
-                      className="w-full bg-primary"
-                    >
-                      {isTranslating ? "Translating..." : (
-                        <span className="flex items-center justify-center gap-2">
-                          <Languages size={16} /> Translate to Sign Language <ArrowRight size={16} />
-                        </span>
-                      )}
-                    </Button>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="paragraph">
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <Textarea 
-                        placeholder="Enter a paragraph to translate or click the microphone to speak..." 
-                        className="min-h-[150px] pr-12"
-                        value={inputText}
-                        onChange={(e) => setInputText(e.target.value)}
-                      />
-                      <SpeechRecognizer 
-                        onTranscript={handleSpeechInput} 
-                        isListening={isListening} 
-                        setIsListening={setIsListening}
-                      />
-                    </div>
-                    
-                    <Button 
-                      onClick={handleTranslate} 
-                      disabled={isTranslating}
-                      className="w-full bg-primary"
-                    >
-                      {isTranslating ? "Translating..." : (
-                        <span className="flex items-center justify-center gap-2">
-                          <Languages size={16} /> Translate to Sign Language <ArrowRight size={16} />
-                        </span>
-                      )}
-                    </Button>
-                  </div>
-                </TabsContent>
-              </Tabs>
+                <Button 
+                  onClick={() => handleTranslate()}
+                  disabled={isTranslating}
+                  className="w-full bg-primary"
+                >
+                  {isTranslating ? "Translating..." : (
+                    <span className="flex items-center justify-center gap-2">
+                      <Languages size={16} /> Translate to Sign Language <ArrowRight size={16} />
+                    </span>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
           {translationResult && (
-            <TranslationDisplay result={translationResult} mode={translationMode} />
+            <TranslationDisplay result={translationResult} />
           )}
         </div>
       </main>

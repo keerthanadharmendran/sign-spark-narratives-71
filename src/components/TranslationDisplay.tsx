@@ -19,12 +19,11 @@ interface TranslationDisplayProps {
       imageUrl: string;
     }[];
   };
-  mode: 'word' | 'paragraph';
 }
 
-export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, mode }) => {
+export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Start playing automatically
   
   useEffect(() => {
     let intervalId: number | null = null;
@@ -63,11 +62,17 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
     }
   }, [currentIndex, result.words]);
   
+  // Reset to first sign and auto-play when new translation comes in
+  useEffect(() => {
+    setCurrentIndex(0);
+    setIsPlaying(true);
+  }, [result]);
+  
   return (
     <Card className="bg-white shadow-lg">
       <CardHeader className="bg-blue-50">
         <CardTitle className="flex justify-between items-center">
-          <span>Translation Results</span>
+          <span>Sign Language Translation</span>
           {result.words.length > 1 && (
             <Button 
               variant="outline" 
@@ -150,14 +155,12 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
           </Carousel>
         </div>
         
-        {mode === 'paragraph' && result.words.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-lg font-medium mb-2">Original Text:</h3>
-            <p className="text-muted-foreground">
-              {result.words.map(word => word.text).join(' ')}
-            </p>
-          </div>
-        )}
+        <div className="mt-8">
+          <h3 className="text-lg font-medium mb-2">Original Text:</h3>
+          <p className="text-muted-foreground">
+            {result.words.map(word => word.text).join(' ')}
+          </p>
+        </div>
       </CardContent>
     </Card>
   );
