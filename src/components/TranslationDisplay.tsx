@@ -10,6 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious
 } from '@/components/ui/carousel';
+import { Play, Pause } from 'lucide-react';
 
 interface TranslationDisplayProps {
   result: {
@@ -54,10 +55,17 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
       setCurrentIndex(0);
     }
   };
+
+  // Debug logging to check image URLs
+  useEffect(() => {
+    if (result.words.length > 0) {
+      console.log("Current sign image:", result.words[currentIndex].imageUrl);
+    }
+  }, [currentIndex, result.words]);
   
   return (
-    <Card>
-      <CardHeader>
+    <Card className="bg-white shadow-lg">
+      <CardHeader className="bg-blue-50">
         <CardTitle className="flex justify-between items-center">
           <span>Translation Results</span>
           {result.words.length > 1 && (
@@ -65,8 +73,17 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
               variant="outline" 
               size="sm" 
               onClick={handlePlayPause}
+              className="flex items-center gap-2"
             >
-              {isPlaying ? 'Pause' : 'Play All Signs'}
+              {isPlaying ? (
+                <>
+                  <Pause size={16} /> Pause
+                </>
+              ) : (
+                <>
+                  <Play size={16} /> Play All Signs
+                </>
+              )}
             </Button>
           )}
         </CardTitle>
@@ -77,12 +94,17 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
           {/* Current active sign */}
           {result.words.length > 0 && (
             <div className="mb-8 flex flex-col items-center">
-              <div className="w-64 h-64 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-md">
+              <div className="w-64 h-64 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200">
                 <img 
                   src={result.words[currentIndex].imageUrl} 
                   alt={`Sign for "${result.words[currentIndex].text}"`}
                   className="max-w-full max-h-full object-contain"
                   loading="eager"
+                  onError={(e) => {
+                    console.error("Image load error:", e);
+                    // Set fallback image on error
+                    (e.target as HTMLImageElement).src = "https://media.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif";
+                  }}
                 />
               </div>
               <p className="mt-4 text-center text-xl font-medium">
@@ -104,12 +126,16 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
                   }}
                 >
                   <div className={`flex flex-col items-center p-2 ${currentIndex === index ? 'ring-2 ring-primary rounded-lg' : ''}`}>
-                    <div className="w-20 h-20 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm">
+                    <div className="w-20 h-20 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm border border-gray-200">
                       <img 
                         src={word.imageUrl} 
                         alt={`Sign for "${word.text}"`}
                         className="max-w-full max-h-full object-contain"
                         loading="lazy"
+                        onError={(e) => {
+                          // Set fallback image on error
+                          (e.target as HTMLImageElement).src = "https://media.giphy.com/media/3o7bu3XilJ5BOiSGic/giphy.gif";
+                        }}
                       />
                     </div>
                     <p className="mt-1 text-center text-xs font-medium truncate w-full">

@@ -46,6 +46,9 @@ const Translator: React.FC = () => {
         : await translateParagraph(inputText);
       
       setTranslationResult(result);
+      
+      // Log the results to debug image display issues
+      console.log("Translation result:", result);
     } catch (error) {
       toast({
         title: "Translation failed",
@@ -59,7 +62,7 @@ const Translator: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-blue-50">
+    <div className="min-h-screen gradient-bg">
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -94,7 +97,7 @@ const Translator: React.FC = () => {
             </p>
           </section>
 
-          <Card>
+          <Card className="bg-white shadow-lg">
             <CardContent className="p-6">
               <Tabs defaultValue="word" onValueChange={(v) => setTranslationMode(v as 'word' | 'paragraph')}>
                 <TabsList className="grid grid-cols-2 mb-6">
@@ -107,7 +110,7 @@ const Translator: React.FC = () => {
                     <div className="relative">
                       <Textarea 
                         placeholder="Enter a word or short phrase to translate or click the microphone to speak..." 
-                        className="min-h-[100px]"
+                        className="min-h-[100px] pr-12"
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                       />
@@ -121,7 +124,7 @@ const Translator: React.FC = () => {
                     <Button 
                       onClick={handleTranslate} 
                       disabled={isTranslating}
-                      className="w-full"
+                      className="w-full bg-primary"
                     >
                       {isTranslating ? "Translating..." : (
                         <span className="flex items-center justify-center gap-2">
@@ -137,7 +140,7 @@ const Translator: React.FC = () => {
                     <div className="relative">
                       <Textarea 
                         placeholder="Enter a paragraph to translate or click the microphone to speak..." 
-                        className="min-h-[150px]"
+                        className="min-h-[150px] pr-12"
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                       />
@@ -151,7 +154,7 @@ const Translator: React.FC = () => {
                     <Button 
                       onClick={handleTranslate} 
                       disabled={isTranslating}
-                      className="w-full"
+                      className="w-full bg-primary"
                     >
                       {isTranslating ? "Translating..." : (
                         <span className="flex items-center justify-center gap-2">
