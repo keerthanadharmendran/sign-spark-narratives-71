@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowRight, LogIn, Translate, User } from 'lucide-react';
+import { ArrowRight, LogIn, Languages, User } from 'lucide-react';
 import { TranslationDisplay } from '@/components/TranslationDisplay';
 
 const Translator: React.FC = () => {
@@ -52,7 +52,7 @@ const Translator: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-bg">
+    <div className="min-h-screen bg-blue-50">
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -111,7 +111,7 @@ const Translator: React.FC = () => {
                     >
                       {isTranslating ? "Translating..." : (
                         <span className="flex items-center justify-center gap-2">
-                          <Translate size={16} /> Translate to Sign Language <ArrowRight size={16} />
+                          <Languages size={16} /> Translate to Sign Language <ArrowRight size={16} />
                         </span>
                       )}
                     </Button>
@@ -134,7 +134,7 @@ const Translator: React.FC = () => {
                     >
                       {isTranslating ? "Translating..." : (
                         <span className="flex items-center justify-center gap-2">
-                          <Translate size={16} /> Translate to Sign Language <ArrowRight size={16} />
+                          <Languages size={16} /> Translate to Sign Language <ArrowRight size={16} />
                         </span>
                       )}
                     </Button>
