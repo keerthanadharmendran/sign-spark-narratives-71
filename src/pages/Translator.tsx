@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../services/authService';
 import { translateText, translateParagraph } from '../services/translationService';
@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowRight, LogIn, Languages, User } from 'lucide-react';
+import { ArrowRight, LogIn, Languages, User, Mic, MicOff } from 'lucide-react';
 import { TranslationDisplay } from '@/components/TranslationDisplay';
+import { SpeechRecognizer } from '@/components/SpeechRecognizer';
 
 const Translator: React.FC = () => {
   const navigate = useNavigate();
@@ -22,12 +23,17 @@ const Translator: React.FC = () => {
   const [translationResult, setTranslationResult] = useState<{
     words: { text: string; imageUrl: string }[];
   } | null>(null);
+  const [isListening, setIsListening] = useState(false);
+
+  const handleSpeechInput = (transcript: string) => {
+    setInputText(transcript);
+  };
 
   const handleTranslate = async () => {
     if (!inputText.trim()) {
       toast({
         title: "Empty input",
-        description: "Please enter some text to translate.",
+        description: "Please enter some text or speak to translate.",
         variant: "destructive",
       });
       return;
@@ -46,6 +52,7 @@ const Translator: React.FC = () => {
         description: "An error occurred during translation. Please try again.",
         variant: "destructive",
       });
+      console.error("Translation error:", error);
     } finally {
       setIsTranslating(false);
     }
@@ -83,7 +90,7 @@ const Translator: React.FC = () => {
           <section className="text-center">
             <h2 className="text-3xl font-bold mb-2">Sign Language Translator</h2>
             <p className="text-muted-foreground">
-              Enter text below to translate into American Sign Language (ASL)
+              Speak or enter text below to translate into American Sign Language (ASL)
             </p>
           </section>
 
@@ -97,12 +104,19 @@ const Translator: React.FC = () => {
                 
                 <TabsContent value="word">
                   <div className="space-y-4">
-                    <Textarea 
-                      placeholder="Enter a word or short phrase to translate..." 
-                      className="min-h-[100px]"
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                    />
+                    <div className="relative">
+                      <Textarea 
+                        placeholder="Enter a word or short phrase to translate or click the microphone to speak..." 
+                        className="min-h-[100px]"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                      />
+                      <SpeechRecognizer 
+                        onTranscript={handleSpeechInput} 
+                        isListening={isListening} 
+                        setIsListening={setIsListening} 
+                      />
+                    </div>
                     
                     <Button 
                       onClick={handleTranslate} 
@@ -120,12 +134,19 @@ const Translator: React.FC = () => {
                 
                 <TabsContent value="paragraph">
                   <div className="space-y-4">
-                    <Textarea 
-                      placeholder="Enter a paragraph to translate..." 
-                      className="min-h-[150px]"
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                    />
+                    <div className="relative">
+                      <Textarea 
+                        placeholder="Enter a paragraph to translate or click the microphone to speak..." 
+                        className="min-h-[150px]"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                      />
+                      <SpeechRecognizer 
+                        onTranscript={handleSpeechInput} 
+                        isListening={isListening} 
+                        setIsListening={setIsListening}
+                      />
+                    </div>
                     
                     <Button 
                       onClick={handleTranslate} 
