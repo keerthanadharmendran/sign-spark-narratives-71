@@ -36,6 +36,10 @@ export async function translateWithTransformer(text: string): Promise<Translatio
   }
   
   try {
+    // Initialize TensorFlow.js
+    await tf.ready();
+    console.log("TensorFlow.js initialized:", tf.getBackend());
+    
     // Initialize the feature extraction pipeline for context understanding
     let contextAnalyzer;
     try {
@@ -188,6 +192,9 @@ export async function learnNewSignFromExamples(
 ): Promise<boolean> {
   try {
     console.log(`Learning new sign for '${word}' from ${exampleUrls.length} examples`);
+    
+    // Initialize TensorFlow.js if not already initialized
+    await tf.ready();
     
     // In a real implementation, this would:
     // 1. Extract features from example GIFs/videos
