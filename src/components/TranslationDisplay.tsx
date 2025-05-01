@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -10,8 +11,10 @@ import {
   CarouselNext,
   CarouselPrevious
 } from '@/components/ui/carousel';
-import { Play, Pause, Cog, Info, Sparkles } from 'lucide-react';
+import { Play, Pause, Cog, Info, Sparkles, Globe } from 'lucide-react';
 import SignAvatar from './SignAvatar';
+import { Badge } from '@/components/ui/badge';
+import { getLanguageName, SUPPORTED_LANGUAGES } from '../services/languageService';
 
 interface TranslationDisplayProps {
   result: {
@@ -22,6 +25,7 @@ interface TranslationDisplayProps {
     }[];
     originalText?: string;
     translatedGrammar?: string;
+    detectedLanguage?: string;
   };
 }
 
@@ -32,6 +36,9 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
   
   // Safety check for result data
   const hasWords = result && result.words && result.words.length > 0;
+  
+  // Check if translation was from a non-English language
+  const isMultilingual = result.detectedLanguage && result.detectedLanguage !== SUPPORTED_LANGUAGES.ENGLISH;
   
   useEffect(() => {
     let intervalId: number | null = null;
@@ -111,6 +118,13 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
             </Button>
           )}
         </CardTitle>
+        
+        {isMultilingual && (
+          <div className="flex items-center mt-2 text-sm text-blue-600">
+            <Globe size={16} className="mr-2" /> 
+            Translated from {getLanguageName(result.detectedLanguage || '')} to English to Sign Language
+          </div>
+        )}
       </CardHeader>
       <Separator />
       <CardContent className="p-6">
@@ -217,10 +231,20 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {isMultilingual && (
+                  <div className="p-3 bg-white rounded shadow">
+                    <h4 className="text-sm font-medium text-gray-500">
+                      {getLanguageName(result.detectedLanguage || '')}:
+                    </h4>
+                    <p className="text-base">{result.originalText}</p>
+                  </div>
+                )}
+                
                 <div className="p-3 bg-white rounded shadow">
                   <h4 className="text-sm font-medium text-gray-500">English:</h4>
                   <p className="text-base">{result.originalText || result.words.map(w => w.text).join(' ')}</p>
                 </div>
+                
                 <div className="p-3 bg-white rounded shadow">
                   <h4 className="text-sm font-medium text-gray-500">ASL Structure:</h4>
                   <p className="text-base">{result.translatedGrammar || result.words.map(w => w.text).join(' ')}</p>
@@ -242,6 +266,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
                 <p className="text-sm text-gray-700">
                   This translation uses transformer-based models to understand context, 
                   encoder-decoder architecture with attention mechanisms, and few-shot learning techniques.
+                  {isMultilingual && ` It also includes multilingual support with automatic language detection and translation.`}
                 </p>
               </div>
               
@@ -254,8 +279,33 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
                   <li>ASL grammar restructuring</li>
                   <li>Avatar visualization with pose data (when available)</li>
                   <li>Few-shot learning for new signs</li>
+                  {isMultilingual && <li>Multilingual support with language detection and translation</li>}
                 </ul>
               </div>
+              
+              {isMultilingual && (
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <h3 className="flex items-center text-md font-medium mb-1">
+                    <Globe size={16} className="mr-2" /> Multilingual Processing
+                  </h3>
+                  <p className="text-sm text-gray-700 mb-2">
+                    Your input was detected as {getLanguageName(result.detectedLanguage || '')} and translated to English before generating sign language.
+                  </p>
+                  <div className="flex items-center justify-around text-sm text-gray-700">
+                    <Badge variant="outline" className="bg-white px-2 py-1">
+                      {getLanguageName(result.detectedLanguage || '')} Input
+                    </Badge>
+                    <span>→</span>
+                    <Badge variant="outline" className="bg-white px-2 py-1">
+                      English Translation
+                    </Badge>
+                    <span>→</span>
+                    <Badge variant="outline" className="bg-white px-2 py-1">
+                      ASL Signs
+                    </Badge>
+                  </div>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>

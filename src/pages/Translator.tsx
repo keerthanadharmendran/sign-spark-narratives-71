@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { TranslationDisplay } from '@/components/TranslationDisplay';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Globe } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import TranslationForm from '@/components/TranslationForm';
@@ -11,6 +11,7 @@ const Translator: React.FC = () => {
     words: { text: string; imageUrl: string; poseData?: number[][] }[];
     originalText?: string;
     translatedGrammar?: string;
+    detectedLanguage?: string;
   } | null>(null);
 
   // Check if any results are available to prevent errors
@@ -28,11 +29,12 @@ const Translator: React.FC = () => {
             <h2 className="text-3xl font-bold mb-2">
               <span className="flex items-center justify-center">
                 <Sparkles className="mr-2 text-blue-500" size={24} />
-                Advanced Sign Language Translator
+                Multilingual Sign Language Translator
               </span>
             </h2>
-            <p className="text-muted-foreground">
-              Speak or enter text to translate into American Sign Language (ASL)
+            <p className="text-muted-foreground flex items-center justify-center">
+              <Globe className="mr-2" size={16} />
+              Speak or enter text in English or Tamil to translate into American Sign Language (ASL)
             </p>
           </section>
 

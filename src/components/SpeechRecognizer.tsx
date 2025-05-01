@@ -1,8 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff } from 'lucide-react';
+import { Mic, MicOff, Globe } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SUPPORTED_LANGUAGES } from '../services/languageService';
 
 interface SpeechRecognizerProps {
   onTranscript: (transcript: string) => void;
@@ -17,6 +19,15 @@ export const SpeechRecognizer: React.FC<SpeechRecognizerProps> = ({
 }) => {
   const { toast } = useToast();
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [speechLanguage, setSpeechLanguage] = useState<string>(SUPPORTED_LANGUAGES.ENGLISH);
+  
+  // Reference to store current language to access in callbacks
+  const speechLanguageRef = useRef(speechLanguage);
+  
+  // Update ref when state changes
+  useEffect(() => {
+    speechLanguageRef.current = speechLanguage;
+  }, [speechLanguage]);
 
   useEffect(() => {
     if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
@@ -26,7 +37,9 @@ export const SpeechRecognizer: React.FC<SpeechRecognizerProps> = ({
       
       recognitionInstance.continuous = true;
       recognitionInstance.interimResults = true;
-      recognitionInstance.lang = 'en-US';
+      
+      // Set initial language
+      recognitionInstance.lang = getLanguageCode(speechLanguage);
 
       recognitionInstance.onresult = (event) => {
         const transcript = Array.from(event.results)
@@ -49,6 +62,8 @@ export const SpeechRecognizer: React.FC<SpeechRecognizerProps> = ({
 
       recognitionInstance.onend = () => {
         if (isListening) {
+          // Update language before restarting
+          recognitionInstance.lang = getLanguageCode(speechLanguageRef.current);
           recognitionInstance.start();
         } else {
           setIsListening(false);
@@ -65,6 +80,16 @@ export const SpeechRecognizer: React.FC<SpeechRecognizerProps> = ({
     };
   }, []);
 
+  // Get the appropriate language code for speech recognition
+  const getLanguageCode = (language: string): string => {
+    const languageCodes: { [key: string]: string } = {
+      en: 'en-US',
+      ta: 'ta-IN'
+    };
+    
+    return languageCodes[language] || 'en-US';
+  };
+
   const toggleListening = () => {
     if (!recognition) {
       toast({
@@ -80,11 +105,13 @@ export const SpeechRecognizer: React.FC<SpeechRecognizerProps> = ({
         recognition.stop();
         setIsListening(false);
       } else {
+        // Update language before starting
+        recognition.lang = getLanguageCode(speechLanguage);
         recognition.start();
         setIsListening(true);
         toast({
           title: "Listening...",
-          description: "Speak now. Click the microphone again to stop.",
+          description: `Speak now in ${speechLanguage === 'ta' ? 'Tamil' : 'English'}. Click the microphone again to stop.`,
         });
       }
     } catch (error) {
@@ -98,15 +125,47 @@ export const SpeechRecognizer: React.FC<SpeechRecognizerProps> = ({
     }
   };
 
+  const handleLanguageChange = (value: string) => {
+    setSpeechLanguage(value);
+    
+    // If currently listening, restart recognition with new language
+    if (recognition && isListening) {
+      recognition.stop();
+      setTimeout(() => {
+        if (recognition) {
+          recognition.lang = getLanguageCode(value);
+          recognition.start();
+        }
+      }, 100);
+    }
+    
+    toast({
+      title: "Language Changed",
+      description: `Speech recognition set to ${value === 'ta' ? 'Tamil' : 'English'}`,
+    });
+  };
+
   return (
-    <Button
-      variant="outline"
-      size="icon"
-      className="absolute right-2 bottom-2 rounded-full"
-      onClick={toggleListening}
-      type="button"
-    >
-      {isListening ? <MicOff size={18} className="text-red-500" /> : <Mic size={18} />}
-    </Button>
+    <div className="flex items-center gap-2">
+      <Select value={speechLanguage} onValueChange={handleLanguageChange}>
+        <SelectTrigger className="w-[100px]">
+          <SelectValue placeholder="Language" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="en">English</SelectItem>
+          <SelectItem value="ta">Tamil</SelectItem>
+        </SelectContent>
+      </Select>
+      
+      <Button
+        variant="outline"
+        size="icon"
+        className="rounded-full"
+        onClick={toggleListening}
+        type="button"
+      >
+        {isListening ? <MicOff size={18} className="text-red-500" /> : <Mic size={18} />}
+      </Button>
+    </div>
   );
 };

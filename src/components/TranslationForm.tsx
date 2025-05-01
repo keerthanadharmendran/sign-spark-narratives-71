@@ -7,14 +7,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowRight, Languages, Brain } from 'lucide-react';
+import { ArrowRight, Languages, Brain, Globe } from 'lucide-react';
 import { SpeechRecognizer } from '@/components/SpeechRecognizer';
+import { processMultilingualInput, getLanguageName, SUPPORTED_LANGUAGES } from '../services/languageService';
+import { Badge } from '@/components/ui/badge';
 
 interface TranslationFormProps {
   onTranslationComplete: (result: {
     words: { text: string; imageUrl: string; poseData?: number[][] }[];
     originalText?: string;
     translatedGrammar?: string;
+    detectedLanguage?: string;
   }) => void;
 }
 
@@ -25,6 +28,7 @@ const TranslationForm: React.FC<TranslationFormProps> = ({ onTranslationComplete
   const [isTranslating, setIsTranslating] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [useAdvancedModel, setUseAdvancedModel] = useState(true);
+  const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
 
   const handleSpeechInput = (transcript: string) => {
     setInputText(transcript);
@@ -48,25 +52,45 @@ const TranslationForm: React.FC<TranslationFormProps> = ({ onTranslationComplete
 
     setIsTranslating(true);
     try {
-      console.log("Translating text:", textToTranslate);
+      console.log("Processing multilingual input:", textToTranslate);
+      
+      // Process multilingual input
+      const multilingual = await processMultilingualInput(textToTranslate);
+      setDetectedLanguage(multilingual.detectedLanguage);
+      
+      const textForTranslation = multilingual.translatedText;
+      console.log("Text after language processing:", textForTranslation);
       console.log("Using advanced model:", useAdvancedModel);
       
       let result;
       
       if (useAdvancedModel) {
         // Use the advanced transformer-based translation
-        result = await translateWithTransformer(textToTranslate);
+        result = await translateWithTransformer(textForTranslation);
+        
+        // Add detected language information
+        result = {
+          ...result,
+          originalText: multilingual.originalText,
+          detectedLanguage: multilingual.detectedLanguage
+        };
+        
         toast({
           title: "AI Translation Complete",
-          description: "Translation performed using transformer-based neural model",
+          description: `Translation performed using transformer-based neural model. ${
+            multilingual.detectedLanguage !== SUPPORTED_LANGUAGES.ENGLISH 
+              ? `Detected language: ${getLanguageName(multilingual.detectedLanguage)}` 
+              : ''
+          }`,
           variant: "default",
         });
       } else {
         // Use the basic translation as fallback
-        const basicResult = await translateToSignLanguage(textToTranslate);
+        const basicResult = await translateToSignLanguage(textForTranslation);
         result = {
           words: basicResult.words,
-          originalText: textToTranslate,
+          originalText: multilingual.originalText,
+          detectedLanguage: multilingual.detectedLanguage
         };
       }
       
@@ -123,16 +147,25 @@ const TranslationForm: React.FC<TranslationFormProps> = ({ onTranslationComplete
           
           <div className="relative">
             <Textarea 
-              placeholder="Enter text or click the microphone to speak..." 
+              placeholder="Enter text in any supported language or click the microphone to speak..." 
               className="min-h-[100px] pr-12"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
             />
-            <SpeechRecognizer 
-              onTranscript={handleSpeechInput} 
-              isListening={isListening} 
-              setIsListening={setIsListening} 
-            />
+            <div className="absolute bottom-2 right-2">
+              <SpeechRecognizer 
+                onTranscript={handleSpeechInput} 
+                isListening={isListening} 
+                setIsListening={setIsListening} 
+              />
+            </div>
+            
+            {detectedLanguage && detectedLanguage !== SUPPORTED_LANGUAGES.ENGLISH && (
+              <Badge variant="outline" className="absolute top-2 right-2 bg-blue-50">
+                <Globe size={12} className="mr-1" />
+                {getLanguageName(detectedLanguage)} detected
+              </Badge>
+            )}
           </div>
           
           <Button 
