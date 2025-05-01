@@ -13,6 +13,11 @@ const Translator: React.FC = () => {
     translatedGrammar?: string;
   } | null>(null);
 
+  // Check if any results are available to prevent errors
+  const hasResults = translationResult && 
+                    translationResult.words && 
+                    translationResult.words.length > 0;
+
   return (
     <div className="min-h-screen gradient-bg">
       <Header />
@@ -33,7 +38,7 @@ const Translator: React.FC = () => {
 
           <TranslationForm onTranslationComplete={setTranslationResult} />
 
-          {translationResult && (
+          {hasResults && (
             <TranslationDisplay result={translationResult} />
           )}
         </div>

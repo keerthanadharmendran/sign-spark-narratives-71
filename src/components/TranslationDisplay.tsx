@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -11,7 +10,7 @@ import {
   CarouselNext,
   CarouselPrevious
 } from '@/components/ui/carousel';
-import { Play, Pause, Cog, Coins, Info, Sparkles } from 'lucide-react';
+import { Play, Pause, Cog, Info, Sparkles } from 'lucide-react';
 import SignAvatar from './SignAvatar';
 
 interface TranslationDisplayProps {
@@ -31,10 +30,13 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
   const [isPlaying, setIsPlaying] = useState(true); // Start playing automatically
   const [viewMode, setViewMode] = useState<'gif' | 'avatar'>('gif');
   
+  // Safety check for result data
+  const hasWords = result && result.words && result.words.length > 0;
+  
   useEffect(() => {
     let intervalId: number | null = null;
     
-    if (isPlaying && result.words.length > 0) {
+    if (isPlaying && hasWords) {
       intervalId = window.setInterval(() => {
         setCurrentIndex((prevIndex) => {
           const nextIndex = prevIndex + 1;
@@ -52,7 +54,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
         clearInterval(intervalId);
       }
     };
-  }, [isPlaying, result.words.length]);
+  }, [isPlaying, result.words.length, hasWords]);
   
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
@@ -60,23 +62,27 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
       setCurrentIndex(0);
     }
   };
-
-  // Debug logging to check image URLs
-  useEffect(() => {
-    if (result.words.length > 0) {
-      console.log("Current sign image:", result.words[currentIndex].imageUrl);
-      console.log("Current word:", result.words[currentIndex].text);
-      if (result.words[currentIndex].poseData) {
-        console.log("Pose data available for animation");
-      }
-    }
-  }, [currentIndex, result.words]);
   
   // Reset to first sign and auto-play when new translation comes in
   useEffect(() => {
-    setCurrentIndex(0);
-    setIsPlaying(true);
-  }, [result]);
+    if (hasWords) {
+      setCurrentIndex(0);
+      setIsPlaying(true);
+      
+      // Choose appropriate view mode based on data availability
+      const hasPoseData = result.words.some(word => word.poseData && word.poseData.length > 0);
+      setViewMode(hasPoseData ? 'avatar' : 'gif');
+    }
+  }, [result, hasWords]);
+
+  // If no translation words, don't render anything
+  if (!hasWords) {
+    return null;
+  }
+  
+  // Get current word safely
+  const currentWord = result.words[currentIndex] || { text: '', imageUrl: '' };
+  const hasPoseData = Boolean(currentWord.poseData && currentWord.poseData.length > 0);
   
   return (
     <Card className="bg-white shadow-lg">
@@ -123,6 +129,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
                   size="sm"
                   className="mr-2"
                   onClick={() => setViewMode('gif')}
+                  disabled={!currentWord.imageUrl}
                 >
                   GIF View
                 </Button>
@@ -130,40 +137,39 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
                   variant={viewMode === 'avatar' ? 'default' : 'outline'} 
                   size="sm"
                   onClick={() => setViewMode('avatar')}
+                  disabled={!hasPoseData}
                 >
-                  3D Avatar
+                  Avatar View
                 </Button>
               </div>
               
               {/* Current active sign */}
-              {result.words.length > 0 && (
-                <div className="mb-8 flex flex-col items-center">
-                  {viewMode === 'gif' ? (
-                    <div className="w-75 h-75 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200">
-                      <img 
-                        src={result.words[currentIndex].imageUrl} 
-                        alt={`Sign for "${result.words[currentIndex].text}"`}
-                        className="max-w-full max-h-full object-contain"
-                        loading="eager"
-                        onError={(e) => {
-                          console.error("Image load error:", e);
-                          // Set fallback image on error
-                          (e.target as HTMLImageElement).src = "/signs/not-found.gif";
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <SignAvatar 
-                      poseData={result.words[currentIndex].poseData}
-                      isPlaying={isPlaying}
-                      word={result.words[currentIndex].text}
+              <div className="mb-8 flex flex-col items-center">
+                {viewMode === 'gif' || !hasPoseData ? (
+                  <div className="w-75 h-75 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200">
+                    <img 
+                      src={currentWord.imageUrl} 
+                      alt={`Sign for "${currentWord.text}"`}
+                      className="max-w-full max-h-full object-contain"
+                      loading="eager"
+                      onError={(e) => {
+                        console.error("Image load error:", e);
+                        // Set fallback image on error
+                        (e.target as HTMLImageElement).src = "/signs/not-found.gif";
+                      }}
                     />
-                  )}
-                  <p className="mt-4 text-center text-xl font-medium">
-                    {result.words[currentIndex].text}
-                  </p>
-                </div>
-              )}
+                  </div>
+                ) : (
+                  <SignAvatar 
+                    poseData={currentWord.poseData}
+                    isPlaying={isPlaying}
+                    word={currentWord.text}
+                  />
+                )}
+                <p className="mt-4 text-center text-xl font-medium">
+                  {currentWord.text}
+                </p>
+              </div>
               
               {/* Carousel of all signs */}
               <Carousel className="w-full max-w-lg">
@@ -246,7 +252,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
                 <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
                   <li>Transformer models for context understanding</li>
                   <li>ASL grammar restructuring</li>
-                  <li>3D avatar with pose estimation</li>
+                  <li>Avatar visualization with pose data (when available)</li>
                   <li>Few-shot learning for new signs</li>
                 </ul>
               </div>
