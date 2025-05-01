@@ -18,7 +18,7 @@ interface DatabaseState {
 // Initial database with actual sign language GIFs
 const initialSignImages: SignImage[] = [
   // Common words with proper ASL GIFs
-  { id: 1, word: "hello", imageUrl: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnYwYWY2ejkzaTVwa3FpNGJ3MTBzbXd5cWppbHQ2MjlrZGd0Y2ZtdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/eVJGS7xYo3uQrHoC8M/giphy.gif" },
+  { id: 1, word: "hello", imageUrl: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExcW5oazVtcXF2dW5memdlODVzMGg0MWRiNTh0a2RyZHh6Ym8xYTVqYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/vBULbuCExwMdCMZQDT/giphy.gif" },
   { id: 2, word: "thank", imageUrl: "https://media.giphy.com/media/26gsjCZpPolPr3sBy/giphy.gif" },
   { id: 3, word: "you", imageUrl: "https://media.giphy.com/media/3o7TKGMZYdvtZ7HGLU/giphy.gif" },
   { id: 4, word: "welcome", imageUrl: "https://media.giphy.com/media/3o7TKGy6TBUPrjtQLC/giphy.gif" },
@@ -73,10 +73,10 @@ const initialSignImages: SignImage[] = [
   { id: 107, word: "g", imageUrl: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExN3l1YW5hbTVnbDl4c2QzcHgyamZ1c2V1bmoyemUzOW04am9hZ3J1eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5m2G33ylWSc3QKA5WK/giphy.gif" },
   { id: 108, word: "h", imageUrl: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExYXl0OHY3ODZkOXN1cTV6MW1iczY1a3czc293ZGU0b2hodXZ3NnExdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3JPPJNvPEVetj4DN69/giphy.gif" },
   { id: 109, word: "i", imageUrl: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGJsbWs4bms3ZXhxdnpoZ215NDZ3MGRlcnIwNHl1ajVyNnRoM2p0MSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/un8KUN4qGQn8TCLq9c/giphy.gif" },
-  { id: 110, word: "j", imageUrl: "https://media.giphy.com/media/KznoYL3aihSGpQrbFx/giphy.gif" },
-  { id: 111, word: "k", imageUrl: "https://media.giphy.com/media/lroh3nfHQ78XezkHkh/giphy.gif" },
-  { id: 112, word: "l", imageUrl: "https://media.giphy.com/media/Q7YFT6lHgYnpK5tAp5/giphy.gif" },
-  { id: 113, word: "m", imageUrl: "https://media.giphy.com/media/j5zwMfZnd0w8YQRaDM/giphy.gif" },
+  { id: 110, word: "j", imageUrl: "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmgwaHVnMDR5dGFlM3d2bm93bDYxNzB5bDlqZDFoeTBseTR4cDZzeSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3VEouB9gIsJxtojmQD/giphy.gif" },
+  { id: 111, word: "k", imageUrl: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMjJrcTV6cmVvN2toczc2NWM1aTB0YjVybGR1cGs1dGo3MW11ajdjcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/7kRBXBDAHh1Kd1upm8/giphy.gif" },
+  { id: 112, word: "l", imageUrl: "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExejQyeWlyYmVkdmo5cGY2ZnhrNmszMDNtb3R3dm9jZm4yNjA1bzRpYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lxDlbfZZuOjtoUhpoZ/giphy.gif" },
+  { id: 113, word: "m", imageUrl: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWxsaTRwazV5ZzA3MzN5dXNpenhlMWJ2bWphbWVrZzhweHBzdWVhbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/RNl7EkE4ZWMT6vesN4/giphy.gif" },
   { id: 114, word: "n", imageUrl: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzhmZDk2dmk0N3h6N3NkZzJmMzNvaTdnb290ZmF4bHNlcjFmZ25xbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/PrtmMQbknXa1WJscd5/giphy.gif" },
   { id: 115, word: "o", imageUrl: "https://media.giphy.com/media/XGhiMXmZhS0mcTSpEM/giphy.gif" },
   { id: 116, word: "p", imageUrl: "https://media.giphy.com/media/d7Sv6F8VKxJN2rLGRl/giphy.gif" },
