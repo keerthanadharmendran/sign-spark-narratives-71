@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { translateToSignLanguage } from '../services/translationService';
 import { translateWithTransformer } from '../services/advancedTranslationService';
@@ -163,7 +162,7 @@ const TranslationForm: React.FC<TranslationFormProps> = ({ onTranslationComplete
             {detectedLanguage && detectedLanguage !== SUPPORTED_LANGUAGES.ENGLISH && (
               <Badge variant="outline" className="absolute top-2 right-2 bg-blue-50">
                 <Globe size={12} className="mr-1" />
-                {getLanguageName(detectedLanguage)} detected
+                {getLanguageName(detectedLanguage)}
               </Badge>
             )}
           </div>

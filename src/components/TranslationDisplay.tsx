@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -293,15 +292,15 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
                   </p>
                   <div className="flex items-center justify-around text-sm text-gray-700">
                     <Badge variant="outline" className="bg-white px-2 py-1">
-                      {getLanguageName(result.detectedLanguage || '')} Input
+                      {getLanguageName(result.detectedLanguage || '')}
                     </Badge>
                     <span>→</span>
                     <Badge variant="outline" className="bg-white px-2 py-1">
-                      English Translation
+                      English
                     </Badge>
                     <span>→</span>
                     <Badge variant="outline" className="bg-white px-2 py-1">
-                      ASL Signs
+                      ASL
                     </Badge>
                   </div>
                 </div>

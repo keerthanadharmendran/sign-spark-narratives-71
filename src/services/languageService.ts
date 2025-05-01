@@ -17,13 +17,29 @@ export async function detectLanguage(text: string): Promise<string> {
   try {
     console.log("Detecting language for:", text);
     
-    // Simple language detection based on character sets for minimal implementation
+    // Enhanced Tamil detection - both for Tamil script and romanized Tamil
     // Tamil characters fall within this Unicode range
     const tamilRegex = /[\u0B80-\u0BFF]/;
     
+    // Common Tamil words in romanized form (lowercase for case-insensitive matching)
+    const romanizedTamilWords = [
+      'vanakkam', 'nandri', 'thamizh', 'amma', 'appa', 'akka', 'anna', 
+      'naan', 'neenga', 'avaru', 'ival', 'enakku', 'unakku', 'epdi'
+    ];
+    
+    // Check for Tamil script characters
     if (tamilRegex.test(text)) {
-      console.log("Detected Tamil language");
+      console.log("Detected Tamil language (script)");
       return SUPPORTED_LANGUAGES.TAMIL;
+    }
+    
+    // Check for romanized Tamil by looking for common Tamil words
+    const lowerText = text.toLowerCase();
+    for (const word of romanizedTamilWords) {
+      if (lowerText.includes(word)) {
+        console.log("Detected romanized Tamil language");
+        return SUPPORTED_LANGUAGES.TAMIL;
+      }
     }
     
     // Default to English for everything else
@@ -112,4 +128,3 @@ export function getLanguageName(langCode: string): string {
   
   return languageNames[langCode] || 'Unknown';
 }
-

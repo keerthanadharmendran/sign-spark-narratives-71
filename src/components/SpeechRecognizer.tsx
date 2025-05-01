@@ -47,6 +47,12 @@ export const SpeechRecognizer: React.FC<SpeechRecognizerProps> = ({
           .map(result => result.transcript)
           .join('');
         
+        // For Tamil language input, preserve the original text
+        // This ensures we don't lose Tamil characters when passing to language detection
+        if (speechLanguageRef.current === SUPPORTED_LANGUAGES.TAMIL) {
+          console.log("Preserving Tamil transcript:", transcript);
+        }
+        
         onTranscript(transcript);
       };
 
