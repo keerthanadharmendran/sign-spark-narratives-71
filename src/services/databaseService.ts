@@ -19,8 +19,8 @@ interface DatabaseState {
 const initialSignImages: SignImage[] = [
   // Common words with proper ASL GIFs
   { id: 1, word: "hello", imageUrl: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExcW5oazVtcXF2dW5memdlODVzMGg0MWRiNTh0a2RyZHh6Ym8xYTVqYSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/vBULbuCExwMdCMZQDT/giphy.gif" },
-  { id: 2, word: "thank", imageUrl: "https://media.giphy.com/media/26gsjCZpPolPr3sBy/giphy.gif" },
-  { id: 3, word: "you", imageUrl: "https://media.giphy.com/media/3o7TKGMZYdvtZ7HGLU/giphy.gif" },
+  { id: 2, word: "thank", imageUrl: "https://media.giphy.com/media/hg1hnmXaiDqe6nkJdt/giphy.gif" },
+  { id: 3, word: "you", imageUrl: "https://media.giphy.com/media/n8YyMMsbc3aPmKtzuJ/giphy.gif" },
   { id: 4, word: "welcome", imageUrl: "https://media.giphy.com/media/3o7TKGy6TBUPrjtQLC/giphy.gif" },
   { id: 5, word: "please", imageUrl: "https://media.giphy.com/media/l0MYtGKBls06gLzGM/giphy.gif" },
   { id: 6, word: "yes", imageUrl: "https://media.giphy.com/media/l0MYrJWMsrDFKm624/giphy.gif" },
