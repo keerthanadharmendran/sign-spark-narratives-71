@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -11,7 +12,6 @@ import {
   CarouselPrevious
 } from '@/components/ui/carousel';
 import { Play, Pause, Cog, Info, Sparkles, Globe } from 'lucide-react';
-import SignAvatar from './SignAvatar';
 import { Badge } from '@/components/ui/badge';
 import { getLanguageName, SUPPORTED_LANGUAGES } from '../services/languageService';
 
@@ -20,7 +20,6 @@ interface TranslationDisplayProps {
     words: {
       text: string;
       imageUrl: string;
-      poseData?: number[][];
     }[];
     originalText?: string;
     translatedGrammar?: string;
@@ -31,7 +30,6 @@ interface TranslationDisplayProps {
 export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true); // Start playing automatically
-  const [viewMode, setViewMode] = useState<'gif' | 'avatar'>('gif');
   
   // Safety check for result data
   const hasWords = result && result.words && result.words.length > 0;
@@ -74,10 +72,6 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
     if (hasWords) {
       setCurrentIndex(0);
       setIsPlaying(true);
-      
-      // Choose appropriate view mode based on data availability
-      const hasPoseData = result.words.some(word => word.poseData && word.poseData.length > 0);
-      setViewMode(hasPoseData ? 'avatar' : 'gif');
     }
   }, [result, hasWords]);
 
@@ -88,7 +82,6 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
   
   // Get current word safely
   const currentWord = result.words[currentIndex] || { text: '', imageUrl: '' };
-  const hasPoseData = Boolean(currentWord.poseData && currentWord.poseData.length > 0);
   
   return (
     <Card className="bg-white shadow-lg">
@@ -136,49 +129,21 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
           
           <TabsContent value="signs" className="space-y-4">
             <div className="flex flex-col items-center">
-              <div className="mb-4 flex items-center">
-                <Button 
-                  variant={viewMode === 'gif' ? 'default' : 'outline'} 
-                  size="sm"
-                  className="mr-2"
-                  onClick={() => setViewMode('gif')}
-                  disabled={!currentWord.imageUrl}
-                >
-                  GIF View
-                </Button>
-                <Button 
-                  variant={viewMode === 'avatar' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => setViewMode('avatar')}
-                  disabled={!hasPoseData}
-                >
-                  Avatar View
-                </Button>
-              </div>
-              
               {/* Current active sign */}
               <div className="mb-8 flex flex-col items-center">
-                {viewMode === 'gif' || !hasPoseData ? (
-                  <div className="w-75 h-75 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200">
-                    <img 
-                      src={currentWord.imageUrl} 
-                      alt={`Sign for "${currentWord.text}"`}
-                      className="max-w-full max-h-full object-contain"
-                      loading="eager"
-                      onError={(e) => {
-                        console.error("Image load error:", e);
-                        // Set fallback image on error
-                        (e.target as HTMLImageElement).src = "/signs/not-found.gif";
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <SignAvatar 
-                    poseData={currentWord.poseData}
-                    isPlaying={isPlaying}
-                    word={currentWord.text}
+                <div className="w-75 h-75 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200">
+                  <img 
+                    src={currentWord.imageUrl} 
+                    alt={`Sign for "${currentWord.text}"`}
+                    className="max-w-full max-h-full object-contain"
+                    loading="eager"
+                    onError={(e) => {
+                      console.error("Image load error:", e);
+                      // Set fallback image on error
+                      (e.target as HTMLImageElement).src = "/signs/not-found.gif";
+                    }}
                   />
-                )}
+                </div>
                 <p className="mt-4 text-center text-xl font-medium">
                   {currentWord.text}
                 </p>
@@ -276,7 +241,6 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
                 <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
                   <li>Transformer models for context understanding</li>
                   <li>ASL grammar restructuring</li>
-                  <li>Avatar visualization with pose data (when available)</li>
                   <li>Few-shot learning for new signs</li>
                   {isMultilingual && <li>Multilingual support with language detection and translation</li>}
                 </ul>

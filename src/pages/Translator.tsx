@@ -8,7 +8,7 @@ import TranslationForm from '@/components/TranslationForm';
 
 const Translator: React.FC = () => {
   const [translationResult, setTranslationResult] = useState<{
-    words: { text: string; imageUrl: string; poseData?: number[][] }[];
+    words: { text: string; imageUrl: string }[];
     originalText?: string;
     translatedGrammar?: string;
     detectedLanguage?: string;

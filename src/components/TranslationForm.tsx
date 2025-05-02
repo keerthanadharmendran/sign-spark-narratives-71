@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { translateToSignLanguage } from '../services/translationService';
 import { translateWithTransformer } from '../services/advancedTranslationService';
@@ -13,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 
 interface TranslationFormProps {
   onTranslationComplete: (result: {
-    words: { text: string; imageUrl: string; poseData?: number[][] }[];
+    words: { text: string; imageUrl: string }[];
     originalText?: string;
     translatedGrammar?: string;
     detectedLanguage?: string;
@@ -140,7 +141,7 @@ const TranslationForm: React.FC<TranslationFormProps> = ({ onTranslationComplete
               </label>
             </div>
             <div className="text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
-              {useAdvancedModel ? "Transformer + Avatar" : "Basic Translation"}
+              {useAdvancedModel ? "Transformer Model" : "Basic Translation"}
             </div>
           </div>
           

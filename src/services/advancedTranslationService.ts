@@ -12,7 +12,6 @@ interface TranslationResult {
   words: {
     text: string;
     imageUrl: string;
-    poseData?: number[][]; // 3D pose data for avatar
   }[];
   originalText: string;
   translatedGrammar: string;
@@ -64,19 +63,11 @@ export async function translateWithTransformer(text: string): Promise<Translatio
     const words = translatedGrammar.split(/\s+/).filter(word => word.length > 0);
     console.log("Words after grammar transformation:", words);
     
-    // Get sign images and generate pose data
+    // Get sign images
     const translatedSigns = await Promise.all(words.map(async (word) => {
       // Get sign images with letter fallback if needed
       const wordSigns = getSignImagesForWord(word);
-      
-      // For each sign, generate pose data (in a full implementation)
-      // Here we're creating mock data as placeholder
-      const withPoseData = wordSigns.map(sign => ({
-        ...sign,
-        poseData: generateMockPoseData() // In production, this would use real pose data
-      }));
-      
-      return withPoseData;
+      return wordSigns;
     }));
     
     // Flatten the array of arrays
@@ -103,16 +94,13 @@ function fallbackTranslation(cleanedText: string, originalText: string): Transla
   const words = cleanedText.split(/\s+/).filter(word => word.length > 0);
   
   // Process each word
-  let translatedSigns: { text: string; imageUrl: string; poseData?: number[][] }[] = [];
+  let translatedSigns: { text: string; imageUrl: string }[] = [];
   
   for (const word of words) {
     const wordSigns = getSignImagesForWord(word);
     translatedSigns = [
       ...translatedSigns, 
-      ...wordSigns.map(sign => ({
-        ...sign,
-        poseData: generateMockPoseData()
-      }))
+      ...wordSigns
     ];
   }
   
@@ -154,33 +142,6 @@ function convertToAslGrammar(text: string): string {
   // For other sentences, just return the cleaned text for now
   // A real implementation would use more sophisticated parsing
   return lowerText;
-}
-
-/**
- * Generate mock pose data for avatar animation
- * In a real implementation, this would come from motion capture or ML models
- */
-function generateMockPoseData(): number[][] {
-  // Generate simplified mock pose data 
-  // Each frame has 33 keypoints with x,y,z coordinates
-  const frames = 30; // 30 frames of animation
-  const keypoints = 33; // 33 keypoints in MediaPipe Pose
-  const poseData = [];
-  
-  for (let i = 0; i < frames; i++) {
-    const frameData = [];
-    for (let j = 0; j < keypoints; j++) {
-      // Generate mock coordinates
-      frameData.push([
-        Math.random() * 2 - 1, // x: -1 to 1
-        Math.random() * 2 - 1, // y: -1 to 1
-        Math.random() * 2 - 1  // z: -1 to 1
-      ]);
-    }
-    poseData.push(frameData.flat());
-  }
-  
-  return poseData;
 }
 
 /**
