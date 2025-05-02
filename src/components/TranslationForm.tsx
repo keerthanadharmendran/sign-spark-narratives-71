@@ -130,10 +130,8 @@ const TranslationForm: React.FC<TranslationFormProps> = ({ onTranslationComplete
               <Switch 
                 checked={useAdvancedModel} 
                 onCheckedChange={setUseAdvancedModel}
-                id="advanced-model"
               />
               <label 
-                htmlFor="advanced-model" 
                 className="text-sm font-medium flex items-center cursor-pointer"
               >
                 <Brain size={16} className="mr-1 text-purple-500" />

@@ -63,14 +63,24 @@ export async function translateWithTransformer(text: string): Promise<Translatio
     const words = translatedGrammar.split(/\s+/).filter(word => word.length > 0);
     console.log("Words after grammar transformation:", words);
     
-    // Get sign images - Fixed bug here by directly mapping each word to its sign
-    const translatedSigns = words.map(word => {
+    // Get sign images - Fixed bug: avoid duplicating words like "thank you" -> "thank you you"
+    const translatedSigns = [];
+    let prevWord = ""; // Track previous word to avoid duplication
+    
+    for (const word of words) {
+      // Skip if this word is the same as the previous (avoid duplication)
+      if (word === prevWord) {
+        continue;
+      }
+      
       const signImage = getSignImagesForWord(word);
-      return {
+      translatedSigns.push({
         text: word,
         imageUrl: signImage[0]?.imageUrl || `/signs/not-found.gif`
-      };
-    });
+      });
+      
+      prevWord = word;
+    }
     
     return {
       words: translatedSigns,
@@ -93,13 +103,23 @@ function fallbackTranslation(cleanedText: string, originalText: string): Transla
   const words = cleanedText.split(/\s+/).filter(word => word.length > 0);
   
   // Process each word
-  const translatedSigns = words.map(word => {
+  const translatedSigns = [];
+  let prevWord = ""; // Track previous word to avoid duplication
+  
+  for (const word of words) {
+    // Skip if this word is the same as the previous (avoid duplication)
+    if (word === prevWord) {
+      continue;
+    }
+    
     const signImage = getSignImagesForWord(word);
-    return {
+    translatedSigns.push({
       text: word,
       imageUrl: signImage[0]?.imageUrl || `/signs/not-found.gif`
-    };
-  });
+    });
+    
+    prevWord = word;
+  }
   
   return {
     words: translatedSigns,
@@ -113,35 +133,53 @@ function fallbackTranslation(cleanedText: string, originalText: string): Transla
  * ASL typically follows Time-Topic-Comment structure with specific grammar rules
  */
 function convertToAslGrammar(text: string): string {
-  // Handle special phrases first
+  // Special case for common phrases to handle directly
   const specialPhrases: Record<string, string> = {
     "thank you": "thank you",
     "what is your name": "name you what",
     "how are you": "you feel how",
     "nice to meet you": "meet you nice",
+    "good morning": "morning good",
+    "good afternoon": "afternoon good",
+    "good evening": "evening good",
+    "good night": "night good",
+    "i love you": "i love you",
+    "please help me": "help me please",
+    "excuse me": "excuse me",
+    "i am sorry": "sorry i",
+    "no problem": "problem no",
+    "see you later": "see you later",
+    "see you tomorrow": "tomorrow see you"
   };
   
   // Check for exact special phrases
   const lowerText = text.toLowerCase();
-  for (const [phrase, translation] of Object.entries(specialPhrases)) {
-    if (lowerText === phrase) {
-      return translation;
-    }
+  if (specialPhrases[lowerText]) {
+    return specialPhrases[lowerText];
   }
   
-  // Split the text into sentences
+  // Split the text into sentences for more accurate processing
   const sentences = lowerText
     .replace(/([.!?])\s*/g, "$1|")
     .split("|")
     .filter(sentence => sentence.trim().length > 0);
   
-  // Process each sentence
+  if (sentences.length === 0) return "";
+  
+  // Process each sentence according to ASL grammar rules
   const translatedSentences = sentences.map(sentence => {
     // Pre-process to clean up the sentence
     const cleanedSentence = sentence.trim().replace(/[^\w\s\.\,\?\!]/gi, '');
     if (!cleanedSentence) return "";
     
-    // Tokenize the sentence
+    // Check if this is a special phrase segment
+    for (const [phrase, translation] of Object.entries(specialPhrases)) {
+      if (cleanedSentence.includes(phrase)) {
+        return cleanedSentence.replace(phrase, translation);
+      }
+    }
+    
+    // Tokenize the sentence into words
     const words = cleanedSentence.split(/\s+/).filter(word => word.length > 0);
     if (words.length === 0) return "";
     
@@ -150,16 +188,11 @@ function convertToAslGrammar(text: string): string {
     const nonTimeWords = words.filter(word => !timeWords.includes(word));
     
     // Extract questions (if any)
-    const isQuestion = sentence.includes("?") || 
-                      words.includes("what") || 
-                      words.includes("where") || 
-                      words.includes("when") || 
-                      words.includes("why") || 
-                      words.includes("who") || 
-                      words.includes("how") || 
-                      words.includes("which");
+    const questionMarkerIndex = sentence.indexOf('?');
+    const isQuestion = questionMarkerIndex >= 0 || 
+                      startsWithQuestionWord(sentence);
     
-    // Build ASL structure
+    // Build ASL grammar structure
     let aslStructure: string[] = [];
     
     // Time expressions go first in ASL
@@ -167,50 +200,123 @@ function convertToAslGrammar(text: string): string {
       aslStructure = [...aslStructure, ...timeWords];
     }
     
-    // Find the topic (usually the subject) - simplified approach
-    const remainingWords = [...nonTimeWords];
-    
-    // For questions, the question word often goes at the end in ASL
     if (isQuestion) {
-      // Extract WH question words
-      const questionWords = remainingWords.filter(word => 
-        ["what", "where", "when", "why", "who", "how", "which"].includes(word)
-      );
+      // Handle questions - ASL often puts question words at the end
+      const { questionWords, nonQuestionWords } = extractQuestionWords(nonTimeWords);
       
-      // Remove question words from remaining words
-      const nonQuestionWords = remainingWords.filter(word => 
-        !["what", "where", "when", "why", "who", "how", "which"].includes(word)
-      );
-      
-      // Simple re-ordering for questions - put question words at the end
       if (questionWords.length > 0) {
-        // Very simplified - proper ASL grammar would be more complex
+        // Topic-Comment-Question structure
         const topic = identifyTopic(nonQuestionWords);
-        const verbAndRest = nonQuestionWords.filter(w => w !== topic);
-        aslStructure = [...aslStructure, topic, ...verbAndRest, ...questionWords];
+        const comments = nonQuestionWords.filter(w => 
+          w !== topic && !questionWords.includes(w) && !isUnnecessaryWord(w)
+        );
+        
+        // ASL question structure: Topic, Comment, Question-Word
+        aslStructure = [
+          ...aslStructure,
+          topic,
+          ...comments,
+          ...questionWords
+        ].filter(Boolean);
       } else {
-        // Yes/no questions generally have the same word order in ASL,
-        // but with facial grammar (which we can't represent in text)
-        aslStructure = [...aslStructure, ...remainingWords];
+        // Yes/No questions in ASL use facial expressions with similar word order
+        const topic = identifyTopic(nonTimeWords);
+        const comments = nonTimeWords.filter(w => 
+          w !== topic && !isUnnecessaryWord(w)
+        );
+        
+        aslStructure = [
+          ...aslStructure,
+          topic,
+          ...comments
+        ].filter(Boolean);
       }
     } else {
-      // For statements, follow Topic-Comment structure
-      const topic = identifyTopic(remainingWords);
-      const verbAndRest = remainingWords.filter(w => w !== topic);
+      // Handle statements - follow Topic-Comment structure
+      // Identify negation words
+      const negationWords = nonTimeWords.filter(w => 
+        ["no", "not", "never", "don't", "doesn't", "didn't", "won't", "can't", "cannot"].includes(w)
+      );
       
-      // Add topic first, then the rest
-      aslStructure = [...aslStructure, topic, ...verbAndRest];
+      const nonNegationWords = nonTimeWords.filter(w => !negationWords.includes(w));
+      const topic = identifyTopic(nonNegationWords);
+      
+      // In ASL, negation typically comes at the end
+      const comments = nonNegationWords.filter(w => 
+        w !== topic && !isUnnecessaryWord(w)
+      );
+      
+      // Build the ASL structure: Topic, Comment, Negation
+      aslStructure = [
+        ...aslStructure,
+        topic,
+        ...comments,
+        ...negationWords
+      ].filter(Boolean);
     }
     
-    // Remove articles, certain prepositions, and be-verbs as they're often omitted in ASL
-    aslStructure = aslStructure.filter(word => 
-      !["a", "an", "the", "is", "are", "am", "was", "were", "be", "been"].includes(word)
-    );
+    // Filter out unnecessary words that don't exist in ASL
+    aslStructure = aslStructure.filter(word => !isUnnecessaryWord(word));
     
+    // Join the words to form the ASL sentence
     return aslStructure.join(" ");
   });
   
+  // Join all sentences and return
   return translatedSentences.join(" ");
+}
+
+/**
+ * Check if a sentence starts with a question word
+ */
+function startsWithQuestionWord(sentence: string): boolean {
+  const lowerSentence = sentence.toLowerCase().trim();
+  const questionWords = ["what", "where", "when", "why", "who", "how", "which", "whose", "whom"];
+  
+  for (const word of questionWords) {
+    if (lowerSentence.startsWith(word + " ") || lowerSentence === word) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+/**
+ * Extract question words from a list of words
+ */
+function extractQuestionWords(words: string[]): { questionWords: string[], nonQuestionWords: string[] } {
+  const questionWords: string[] = [];
+  const nonQuestionWords: string[] = [];
+  
+  const questionWordList = ["what", "where", "when", "why", "who", "how", "which", "whose", "whom"];
+  
+  words.forEach(word => {
+    if (questionWordList.includes(word.toLowerCase())) {
+      questionWords.push(word.toLowerCase());
+    } else {
+      nonQuestionWords.push(word);
+    }
+  });
+  
+  return { questionWords, nonQuestionWords };
+}
+
+/**
+ * Check if a word is unnecessary in ASL
+ * ASL omits many function words that are required in English
+ */
+function isUnnecessaryWord(word: string): boolean {
+  const unnecessaryWords = [
+    "a", "an", "the", // Articles
+    "is", "are", "am", "was", "were", "be", "been", "being", // Be-verbs
+    "to", "for", "of", "in", "on", "at", "by", "with", // Common prepositions
+    "do", "does", "did", // Do-verbs as auxiliaries
+    "has", "have", "had", // Have-verbs as auxiliaries
+    "will", "shall", "would", "should", "may", "might", "must", "can", "could" // Modal verbs
+  ];
+  
+  return unnecessaryWords.includes(word.toLowerCase());
 }
 
 /**
@@ -225,7 +331,8 @@ function extractTimeWords(words: string[]): string[] {
     "january", "february", "march", "april", "may", "june", 
     "july", "august", "september", "october", "november", "december",
     "year", "month", "week", "day", "hour", "minute", "second",
-    "past", "future", "ago", "before", "after"
+    "past", "future", "ago", "before", "after",
+    "early", "late", "soon", "already", "yet", "still"
   ];
   
   // Simple detection - a more advanced implementation would detect phrases
@@ -239,27 +346,37 @@ function extractTimeWords(words: string[]): string[] {
 }
 
 /**
- * Simple function to identify the topic of a sentence
+ * Identify the topic of a sentence for ASL translation
  * In ASL, the topic is usually what the sentence is about
  */
 function identifyTopic(words: string[]): string {
-  // Very simplified approach - in real ASL, topic identification is complex
-  // For now, we'll assume the first noun/pronoun is the topic
-  // This is a gross oversimplification and would need a proper NLP approach
+  if (words.length === 0) return "";
   
-  // Common pronouns and potential subjects
-  const potentialTopics = ["i", "you", "he", "she", "it", "we", "they", "this", "that", "these", "those"];
+  // Common pronouns that are often the topic
+  const pronouns = ["i", "you", "he", "she", "it", "we", "they", "this", "that", "these", "those", "my", "your", "his", "her", "our", "their"];
   
-  // Try to find a pronoun first
+  // Common proper nouns that might be topics (simplified)
+  const properNouns = ["john", "mary", "bob", "london", "paris", "monday", "january"];
+  
+  // Check for pronouns first
   for (const word of words) {
-    if (potentialTopics.includes(word.toLowerCase())) {
-      return word.toLowerCase();
+    const lowerWord = word.toLowerCase();
+    if (pronouns.includes(lowerWord)) {
+      return lowerWord;
     }
   }
   
-  // If no pronoun, return the first word as a fallback
-  // This is a simplification - proper topic identification would need POS tagging
-  return words.length > 0 ? words[0].toLowerCase() : "";
+  // Check for proper nouns
+  for (const word of words) {
+    const lowerWord = word.toLowerCase();
+    if (properNouns.includes(lowerWord)) {
+      return lowerWord;
+    }
+  }
+  
+  // If no pronoun or proper noun is found, use the first noun or first word
+  // In a real implementation, we would use POS tagging to identify nouns
+  return words[0].toLowerCase();
 }
 
 /**
