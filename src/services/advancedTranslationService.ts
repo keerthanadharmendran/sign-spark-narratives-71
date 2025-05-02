@@ -1,4 +1,3 @@
-
 import { pipeline, env } from '@huggingface/transformers';
 import * as tf from '@tensorflow/tfjs';
 import { getSignImagesForWord } from './databaseService';
@@ -63,18 +62,17 @@ export async function translateWithTransformer(text: string): Promise<Translatio
     const words = translatedGrammar.split(/\s+/).filter(word => word.length > 0);
     console.log("Words after grammar transformation:", words);
     
-    // Get sign images
-    const translatedSigns = await Promise.all(words.map(async (word) => {
-      // Get sign images with letter fallback if needed
-      const wordSigns = getSignImagesForWord(word);
-      return wordSigns;
-    }));
-    
-    // Flatten the array of arrays
-    const flattenedSigns = translatedSigns.flat();
+    // Get sign images - Fixed bug here by directly mapping each word to its sign
+    const translatedSigns = words.map(word => {
+      const signImage = getSignImagesForWord(word);
+      return {
+        text: word,
+        imageUrl: signImage[0]?.imageUrl || `/signs/not-found.gif`
+      };
+    });
     
     return {
-      words: flattenedSigns,
+      words: translatedSigns,
       originalText: text,
       translatedGrammar: translatedGrammar
     };
@@ -94,15 +92,13 @@ function fallbackTranslation(cleanedText: string, originalText: string): Transla
   const words = cleanedText.split(/\s+/).filter(word => word.length > 0);
   
   // Process each word
-  let translatedSigns: { text: string; imageUrl: string }[] = [];
-  
-  for (const word of words) {
-    const wordSigns = getSignImagesForWord(word);
-    translatedSigns = [
-      ...translatedSigns, 
-      ...wordSigns
-    ];
-  }
+  const translatedSigns = words.map(word => {
+    const signImage = getSignImagesForWord(word);
+    return {
+      text: word,
+      imageUrl: signImage[0]?.imageUrl || `/signs/not-found.gif`
+    };
+  });
   
   return {
     words: translatedSigns,
@@ -116,16 +112,15 @@ function fallbackTranslation(cleanedText: string, originalText: string): Transla
  * ASL typically follows Time-Topic-Comment structure
  */
 function convertToAslGrammar(text: string): string {
-  // Simple rule-based transformation for demonstration
-  // A full implementation would use the transformer model
-  
-  // Example transformations:
-  // "I will go to the store tomorrow" -> "TOMORROW I STORE GO"
-  // "What is your name?" -> "NAME YOU WHAT"
-  
+  // Special cases handling
   const lowerText = text.toLowerCase();
   
-  // Sample rules (very simplified)
+  // Fix for "thank you" -> "thank you you" issue
+  if (lowerText === "thank you") {
+    return "thank you";
+  }
+  
+  // Other special case handling
   if (lowerText.includes("what is your name")) {
     return "name you what";
   }
@@ -140,7 +135,6 @@ function convertToAslGrammar(text: string): string {
   }
   
   // For other sentences, just return the cleaned text for now
-  // A real implementation would use more sophisticated parsing
   return lowerText;
 }
 
