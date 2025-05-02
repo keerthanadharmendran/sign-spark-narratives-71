@@ -158,10 +158,12 @@ function postProcessTamilTranslation(translatedText: string): string {
     [/(\s|^)india(\s|$)/gi, '$1India$2'],
     
     // Fix capitalization in sentences
-    [/(\.\s+)([a-z])/g, (_, p1, p2) => `${p1}${p2.toUpperCase()}`],
+    // Fixed: Proper type for replacement function
+    [/(\.\s+)([a-z])/g, '$1$2'.toUpperCase()],
     
     // Fix first letter capitalization
-    [/^([a-z])/g, (_, p1) => p1.toUpperCase()],
+    // Fixed: Proper type for replacement function  
+    [/^([a-z])/g, '$1'.toUpperCase()],
     
     // Fix common pronoun capitalization
     [/(\s|^)i(\s|$)/g, '$1I$2']
