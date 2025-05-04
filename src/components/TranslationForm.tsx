@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
-import { ArrowRight, Languages, Brain, Globe } from 'lucide-react';
+import { ArrowRight, Languages, Brain, Globe, Code } from 'lucide-react';
 import { SpeechRecognizer } from '@/components/SpeechRecognizer';
 import { processMultilingualInput, getLanguageName, SUPPORTED_LANGUAGES } from '../services/languageService';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ interface TranslationFormProps {
     originalText?: string;
     translatedGrammar?: string;
     detectedLanguage?: string;
+    nlpAnalysis?: any;
   }) => void;
 }
 
@@ -77,7 +78,7 @@ const TranslationForm: React.FC<TranslationFormProps> = ({ onTranslationComplete
         
         toast({
           title: "AI Translation Complete",
-          description: `Translation performed using transformer-based neural model. ${
+          description: `Translation performed using transformer-based neural model with NLP analysis. ${
             multilingual.detectedLanguage !== SUPPORTED_LANGUAGES.ENGLISH 
               ? `Detected language: ${getLanguageName(multilingual.detectedLanguage)}` 
               : ''
@@ -88,10 +89,16 @@ const TranslationForm: React.FC<TranslationFormProps> = ({ onTranslationComplete
         // Use the basic translation as fallback
         const basicResult = await translateToSignLanguage(textForTranslation);
         result = {
-          words: basicResult.words,
+          ...basicResult,
           originalText: multilingual.originalText,
           detectedLanguage: multilingual.detectedLanguage
         };
+        
+        toast({
+          title: "Translation Complete",
+          description: `Translation performed using basic translation with NLP enhancements.`,
+          variant: "default",
+        });
       }
       
       onTranslationComplete(result);
@@ -110,7 +117,7 @@ const TranslationForm: React.FC<TranslationFormProps> = ({ onTranslationComplete
       try {
         const fallbackResult = await translateToSignLanguage(textToTranslate);
         onTranslationComplete({
-          words: fallbackResult.words,
+          ...fallbackResult,
           originalText: textToTranslate
         });
       } catch (fallbackError) {
@@ -138,8 +145,9 @@ const TranslationForm: React.FC<TranslationFormProps> = ({ onTranslationComplete
                 Use Advanced AI Model
               </label>
             </div>
-            <div className="text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full">
-              {useAdvancedModel ? "Transformer Model" : "Basic Translation"}
+            <div className="text-xs text-blue-500 bg-blue-50 px-2 py-1 rounded-full flex items-center">
+              <Code size={14} className="mr-1" />
+              {useAdvancedModel ? "Transformer Model + NLP" : "Basic Translation + NLP"}
             </div>
           </div>
           

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Info, Globe, Wrench } from 'lucide-react';
+import { Play, Pause, Info, Globe, Wrench, Braces, Code } from 'lucide-react';
 import { getLanguageName } from '../services/languageService';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
@@ -16,6 +16,16 @@ interface TranslationDisplayProps {
     originalText?: string;
     translatedGrammar?: string;
     detectedLanguage?: string;
+    nlpAnalysis?: {
+      tokens: string[];
+      nouns: string[];
+      verbs: string[];
+      adjectives: string[];
+      adverbs: string[];
+      sentences: string[];
+      tags: Record<string, string[]>;
+      sentiment: 'positive' | 'negative' | 'neutral';
+    };
   };
   translationKey?: number; // Add this prop to track new translations
 }
@@ -49,7 +59,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
         clearInterval(intervalId);
       }
     };
-  }, [isPlaying, result.words.length, hasWords]);
+  }, [isPlaying, result.words?.length, hasWords]);
   
   const handlePlayPause = () => {
     setIsPlaying(!isPlaying);
@@ -76,6 +86,15 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
   
   // Get current word safely
   const currentWord = result.words[currentIndex] || { text: '', imageUrl: '' };
+  
+  // Determine sentiment color
+  const getSentimentColor = (sentiment?: 'positive' | 'negative' | 'neutral') => {
+    switch (sentiment) {
+      case 'positive': return 'text-green-500';
+      case 'negative': return 'text-red-500';
+      default: return 'text-gray-500';
+    }
+  };
   
   return (
     <Card className="bg-white shadow-lg" id="translation-result">
@@ -106,9 +125,10 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
       <CardContent className="p-6">
         <div className="flex flex-col items-center">
           <Tabs value={activeTab} className="w-full mb-6" onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3 mb-4">
+            <TabsList className="grid w-full grid-cols-4 mb-4">
               <TabsTrigger value="signs" className="text-left">Signs</TabsTrigger>
               <TabsTrigger value="grammar" className="text-left">ASL Grammar</TabsTrigger>
+              <TabsTrigger value="nlp" className="text-left">NLP Analysis</TabsTrigger>
               <TabsTrigger value="info" className="text-left">Info</TabsTrigger>
             </TabsList>
             
@@ -168,6 +188,110 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
               </div>
             </TabsContent>
             
+            <TabsContent value="nlp" className="mt-4">
+              {result.nlpAnalysis ? (
+                <div className="bg-blue-50 p-6 rounded-md space-y-6">
+                  <div>
+                    <h3 className="flex items-center text-lg font-bold mb-4">
+                      <Braces size={18} className="mr-2" /> Natural Language Processing Analysis
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Sentiment Analysis */}
+                      <div className="bg-white p-4 rounded-md shadow-sm">
+                        <h4 className="font-medium mb-2">Sentiment Analysis</h4>
+                        <p className={`text-lg font-semibold ${getSentimentColor(result.nlpAnalysis.sentiment)}`}>
+                          {result.nlpAnalysis.sentiment.charAt(0).toUpperCase() + result.nlpAnalysis.sentiment.slice(1)}
+                        </p>
+                      </div>
+                      
+                      {/* Parts of Speech */}
+                      <div className="bg-white p-4 rounded-md shadow-sm">
+                        <h4 className="font-medium mb-2">Tokens</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {result.nlpAnalysis.tokens.map((token, i) => (
+                            <span key={i} className="bg-gray-100 px-2 py-1 rounded text-sm">
+                              {token}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Nouns */}
+                      <div className="bg-white p-4 rounded-md shadow-sm">
+                        <h4 className="font-medium mb-2">Nouns</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {result.nlpAnalysis.nouns.length > 0 ? (
+                            result.nlpAnalysis.nouns.map((noun, i) => (
+                              <span key={i} className="bg-blue-100 px-2 py-1 rounded text-sm">
+                                {noun}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-gray-500">None detected</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Verbs */}
+                      <div className="bg-white p-4 rounded-md shadow-sm">
+                        <h4 className="font-medium mb-2">Verbs</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {result.nlpAnalysis.verbs.length > 0 ? (
+                            result.nlpAnalysis.verbs.map((verb, i) => (
+                              <span key={i} className="bg-green-100 px-2 py-1 rounded text-sm">
+                                {verb}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-gray-500">None detected</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Adjectives */}
+                      <div className="bg-white p-4 rounded-md shadow-sm">
+                        <h4 className="font-medium mb-2">Adjectives</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {result.nlpAnalysis.adjectives.length > 0 ? (
+                            result.nlpAnalysis.adjectives.map((adj, i) => (
+                              <span key={i} className="bg-purple-100 px-2 py-1 rounded text-sm">
+                                {adj}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-gray-500">None detected</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Adverbs */}
+                      <div className="bg-white p-4 rounded-md shadow-sm">
+                        <h4 className="font-medium mb-2">Adverbs</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {result.nlpAnalysis.adverbs.length > 0 ? (
+                            result.nlpAnalysis.adverbs.map((adv, i) => (
+                              <span key={i} className="bg-yellow-100 px-2 py-1 rounded text-sm">
+                                {adv}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-gray-500">None detected</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-blue-50 p-6 rounded-md">
+                  <p className="text-center text-gray-500">
+                    NLP analysis not available for this translation.
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+            
             <TabsContent value="info" className="mt-4">
               <div className="bg-blue-50 p-6 rounded-md space-y-6">
                 <div>
@@ -186,9 +310,22 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, 
                   </h3>
                   <ul className="list-disc pl-6 space-y-1 text-gray-700">
                     <li>Transformer models for context understanding</li>
+                    <li>Natural Language Processing for linguistic analysis</li>
                     <li>ASL grammar restructuring</li>
                     <li>Few-shot learning for new signs</li>
                     <li>Multilingual support with language detection and translation</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <h3 className="flex items-center text-lg font-bold mb-2">
+                    <Code size={18} className="mr-2" /> NLP Features
+                  </h3>
+                  <ul className="list-disc pl-6 space-y-1 text-gray-700">
+                    <li>Tokenization - Breaking text into words</li>
+                    <li>Part-of-speech tagging - Identifying nouns, verbs, etc.</li>
+                    <li>Sentiment analysis - Detecting emotional tone</li>
+                    <li>Grammar restructuring - Converting to ASL grammar</li>
                   </ul>
                 </div>
                 
