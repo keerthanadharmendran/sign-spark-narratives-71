@@ -22,7 +22,10 @@ const Header: React.FC = () => {
               <span className="text-sm text-muted-foreground hidden md:inline-block">
                 Welcome, {user?.name}
               </span>
-              <Button variant="outline" size="sm" onClick={() => logout()}>
+              <Button variant="outline" size="sm" onClick={() => {
+                logout();
+                navigate('/login');
+              }}>
                 Logout
               </Button>
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../services/authService';
@@ -36,7 +35,7 @@ const Login: React.FC = () => {
         title: "Login successful",
         description: "Welcome back!",
       });
-      navigate('/');
+      navigate('/translator');
     } catch (error) {
       toast({
         title: "Login failed",
@@ -58,7 +57,7 @@ const Login: React.FC = () => {
         title: "Registration successful",
         description: "Your account has been created.",
       });
-      navigate('/');
+      navigate('/translator');
     } catch (error: any) {
       toast({
         title: "Registration failed",
@@ -68,6 +67,10 @@ const Login: React.FC = () => {
     } finally {
       setIsRegisterLoading(false);
     }
+  };
+
+  const handleContinueAsGuest = () => {
+    navigate('/translator');
   };
 
   return (
@@ -197,7 +200,7 @@ const Login: React.FC = () => {
           </Tabs>
           
           <div className="px-8 py-4 text-center">
-            <Button variant="outline" onClick={() => navigate('/')} className="w-full">
+            <Button variant="outline" onClick={handleContinueAsGuest} className="w-full">
               <Home size={16} className="mr-2" /> Continue as Guest
             </Button>
           </div>
