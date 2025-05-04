@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { TranslationDisplay } from '@/components/TranslationDisplay';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -13,10 +13,23 @@ const Translator: React.FC = () => {
     detectedLanguage?: string;
   } | null>(null);
 
+  // Reference to the translation result section
+  const resultRef = useRef<HTMLDivElement>(null);
+
   // Check if any results are available to prevent errors
   const hasResults = translationResult && 
                     translationResult.words && 
                     translationResult.words.length > 0;
+
+  // Scroll to results when they become available
+  useEffect(() => {
+    if (hasResults && resultRef.current) {
+      resultRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  }, [hasResults]);
 
   return (
     <div className="min-h-screen gradient-bg">
@@ -26,14 +39,16 @@ const Translator: React.FC = () => {
         <div className="max-w-4xl mx-auto space-y-8">
           <section className="text-center">
             <h2 className="text-3xl font-bold mb-4">
-              AI ENABLED SPEECH TO SIGN LANGUAGE CONVERSION
+              AI Enabled Speech to Sign Language Conversion
             </h2>
           </section>
 
           <TranslationForm onTranslationComplete={setTranslationResult} />
 
           {hasResults && (
-            <TranslationDisplay result={translationResult} />
+            <div ref={resultRef}>
+              <TranslationDisplay result={translationResult} />
+            </div>
           )}
         </div>
       </main>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, Info, Globe, Wrench } from 'lucide-react';
 import { getLanguageName } from '../services/languageService';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
@@ -74,7 +74,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
   const currentWord = result.words[currentIndex] || { text: '', imageUrl: '' };
   
   return (
-    <Card className="bg-white shadow-lg">
+    <Card className="bg-white shadow-lg" id="translation-result">
       <CardHeader className="bg-blue-50">
         <CardTitle className="flex justify-between items-center">
           <span>Sign Language Translation</span>
@@ -102,10 +102,10 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
       <CardContent className="p-6">
         <div className="flex flex-col items-center">
           <Tabs defaultValue="signs" className="w-full mb-6" onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="signs">Signs</TabsTrigger>
-              <TabsTrigger value="grammar">ASL Grammar</TabsTrigger>
-              <TabsTrigger value="info">Info</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsTrigger value="signs" className="text-left">Signs</TabsTrigger>
+              <TabsTrigger value="grammar" className="text-left">ASL Grammar</TabsTrigger>
+              <TabsTrigger value="info" className="text-left">Info</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signs" className="mt-4">
@@ -133,29 +133,84 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
             </TabsContent>
             
             <TabsContent value="grammar" className="mt-4">
-              <div className="bg-gray-50 p-4 rounded-md">
-                <h3 className="font-medium mb-2">ASL Grammar Structure:</h3>
-                <p className="text-sm text-gray-700 mb-2">
-                  {result.translatedGrammar || "ASL grammar typically follows the structure: Topic-Comment, rather than Subject-Verb-Object used in English."}
+              <div className="bg-blue-50 p-6 rounded-md">
+                <h3 className="text-xl font-bold mb-4">ASL Grammar Translation</h3>
+                <p className="text-sm text-gray-700 mb-4">
+                  ASL uses different grammar than English. Here's how your text translates to ASL structure:
                 </p>
-                <p className="text-sm text-gray-700">
-                  Key differences: No articles (a, the), different word order, and incorporation of facial expressions as grammatical markers.
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  {result.detectedLanguage && result.detectedLanguage !== "en" ? (
+                    <div className="bg-white p-4 rounded-md shadow-sm">
+                      <p className="font-medium mb-2">{getLanguageName(result.detectedLanguage)}:</p>
+                      <p>{result.originalText}</p>
+                    </div>
+                  ) : null}
+                  
+                  <div className="bg-white p-4 rounded-md shadow-sm">
+                    <p className="font-medium mb-2">English:</p>
+                    <p>{result.originalText}</p>
+                  </div>
+                </div>
+                
+                <div className="bg-white p-4 rounded-md shadow-sm mb-4">
+                  <p className="font-medium mb-2">ASL Structure:</p>
+                  <p>{result.translatedGrammar || result.words.map(word => word.text).join(' ')}</p>
+                </div>
+                
+                <p className="text-sm text-gray-700 mt-4">
+                  ASL typically uses a different word order than English, often following Time-Topic-Comment structure.
                 </p>
               </div>
             </TabsContent>
             
             <TabsContent value="info" className="mt-4">
-              <div className="bg-gray-50 p-4 rounded-md">
-                <h3 className="font-medium mb-2">About Sign Language:</h3>
-                <p className="text-sm text-gray-700 mb-2">
-                  Sign languages are natural languages that use visual-manual modality to convey meaning. They are complete languages with their own grammar and syntax.
-                </p>
-                <p className="text-sm text-gray-700">
-                  {result.detectedLanguage && result.detectedLanguage !== "en" ? 
-                    `Source language detected: ${getLanguageName(result.detectedLanguage)}` : 
-                    "This translation shows American Sign Language (ASL) equivalents of the entered text."
-                  }
-                </p>
+              <div className="bg-blue-50 p-6 rounded-md space-y-6">
+                <div>
+                  <h3 className="flex items-center text-lg font-bold mb-2">
+                    <Info size={18} className="mr-2" /> About This Translation
+                  </h3>
+                  <p className="text-gray-700">
+                    This translation uses transformer-based models to understand context, encoder-decoder architecture with attention mechanisms, 
+                    and few-shot learning techniques. It also includes multilingual support with automatic language detection and translation.
+                  </p>
+                </div>
+                
+                <div>
+                  <h3 className="flex items-center text-lg font-bold mb-2">
+                    <Wrench size={18} className="mr-2" /> Technology Used
+                  </h3>
+                  <ul className="list-disc pl-6 space-y-1 text-gray-700">
+                    <li>Transformer models for context understanding</li>
+                    <li>ASL grammar restructuring</li>
+                    <li>Few-shot learning for new signs</li>
+                    <li>Multilingual support with language detection and translation</li>
+                  </ul>
+                </div>
+                
+                {result.detectedLanguage && result.detectedLanguage !== "en" && (
+                  <div>
+                    <h3 className="flex items-center text-lg font-bold mb-2">
+                      <Globe size={18} className="mr-2" /> Multilingual Processing
+                    </h3>
+                    <p className="text-gray-700 mb-4">
+                      Your input was detected as {getLanguageName(result.detectedLanguage)} and translated to English before generating sign language.
+                    </p>
+                    <div className="flex items-center justify-between text-center">
+                      <div className="bg-white px-4 py-2 rounded-full">
+                        {getLanguageName(result.detectedLanguage)}
+                      </div>
+                      <div className="text-gray-500">→</div>
+                      <div className="bg-white px-4 py-2 rounded-full">
+                        English
+                      </div>
+                      <div className="text-gray-500">→</div>
+                      <div className="bg-white px-4 py-2 rounded-full">
+                        ASL
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
