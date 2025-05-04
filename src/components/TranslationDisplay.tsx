@@ -1,16 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious
-} from '@/components/ui/carousel';
 import { Play, Pause, Cog, Info, Sparkles, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getLanguageName, SUPPORTED_LANGUAGES } from '../services/languageService';
@@ -104,7 +97,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
                 </>
               ) : (
                 <>
-                  <Play size={16} /> Play All Signs
+                  <Play size={16} /> Play Translation
                 </>
               )}
             </Button>
@@ -129,9 +122,9 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
           
           <TabsContent value="signs" className="space-y-4">
             <div className="flex flex-col items-center">
-              {/* Current active sign */}
+              {/* Continuous video of signs */}
               <div className="mb-8 flex flex-col items-center">
-                <div className="w-75 h-75 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200">
+                <div className="w-full max-w-md h-80 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-md border border-gray-200">
                   <img 
                     src={currentWord.imageUrl} 
                     alt={`Sign for "${currentWord.text}"`}
@@ -144,46 +137,16 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
                     }}
                   />
                 </div>
-                <p className="mt-4 text-center text-xl font-medium">
-                  {currentWord.text}
-                </p>
+                <div className="mt-4 text-center">
+                  <p className="text-xl font-medium">
+                    {currentWord.text}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    {currentIndex + 1} of {result.words.length} 
+                    {isPlaying && result.words.length > 1 && " • Playing..."}
+                  </p>
+                </div>
               </div>
-              
-              {/* Carousel of all signs */}
-              <Carousel className="w-full max-w-lg">
-                <CarouselContent>
-                  {result.words.map((word, index) => (
-                    <CarouselItem 
-                      key={index} 
-                      className="basis-1/3 md:basis-1/4 cursor-pointer"
-                      onClick={() => {
-                        setCurrentIndex(index);
-                        setIsPlaying(false);
-                      }}
-                    >
-                      <div className={`flex flex-col items-center p-2 ${currentIndex === index ? 'ring-2 ring-primary rounded-lg' : ''}`}>
-                        <div className="w-20 h-20 flex items-center justify-center overflow-hidden rounded-lg bg-white shadow-sm border border-gray-200">
-                          <img 
-                            src={word.imageUrl} 
-                            alt={`Sign for "${word.text}"`}
-                            className="max-w-full max-h-full object-contain"
-                            loading="lazy"
-                            onError={(e) => {
-                              // Set fallback image on error
-                              (e.target as HTMLImageElement).src = "/signs/not-found.gif";
-                            }}
-                          />
-                        </div>
-                        <p className="mt-1 text-center text-xs font-medium truncate w-full">
-                          {word.text}
-                        </p>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="left-0" />
-                <CarouselNext className="right-0" />
-              </Carousel>
             </div>
           </TabsContent>
           

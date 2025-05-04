@@ -20,6 +20,15 @@ interface TranslationResult {
 const CONTEXT_MODEL = "bert-base-uncased";
 const TRANSLATION_MODEL = "facebook/nllb-200-distilled-600M";
 
+// List of filler words to filter out in sentences (but not when they appear alone)
+const FILLER_WORDS = [
+  "a", "an", "the", "is", "are", "am", "was", "were", "be", "been", "being",
+  "to", "for", "of", "in", "on", "at", "by", "with",
+  "do", "does", "did",
+  "has", "have", "had",
+  "will", "shall", "would", "should", "may", "might", "must", "can", "could"
+];
+
 /**
  * Advanced text-to-sign translation using transformer models
  */
@@ -53,20 +62,27 @@ export async function translateWithTransformer(text: string): Promise<Translatio
     const embeddings = await contextAnalyzer(cleanedText, { pooling: "mean" });
     console.log("Generated embeddings for context understanding");
     
-    // In a full implementation, this would use the embeddings to adjust the translation
-    // For now, we'll use a rule-based approach to demonstrate the concept
+    // Convert to ASL grammar
     const translatedGrammar = convertToAslGrammar(cleanedText);
     console.log("Converted to ASL grammar:", translatedGrammar);
     
     // Process according to ASL grammar structure
+    // If it's a single word, translate as is. If multiple words, filter fillers
     const words = translatedGrammar.split(/\s+/).filter(word => word.length > 0);
     console.log("Words after grammar transformation:", words);
+    
+    // Apply filtering only if this is a multi-word input
+    const wordsToTranslate = words.length === 1 
+      ? words 
+      : words.filter(word => !FILLER_WORDS.includes(word));
+    
+    console.log("Words after filler removal:", wordsToTranslate);
     
     // Get sign images - Fixed bug: avoid duplicating words like "thank you" -> "thank you you"
     const translatedSigns = [];
     let prevWord = ""; // Track previous word to avoid duplication
     
-    for (const word of words) {
+    for (const word of wordsToTranslate) {
       // Skip if this word is the same as the previous (avoid duplication)
       if (word === prevWord) {
         continue;
@@ -126,11 +142,18 @@ function fallbackTranslation(cleanedText: string, originalText: string): Transla
   console.log("Using fallback translation");
   const words = cleanedText.split(/\s+/).filter(word => word.length > 0);
   
+  // Apply filtering only if this is a multi-word input
+  const wordsToTranslate = words.length === 1 
+    ? words 
+    : words.filter(word => !FILLER_WORDS.includes(word));
+  
+  console.log("Words after filler removal:", wordsToTranslate);
+  
   // Process each word
   const translatedSigns = [];
   let prevWord = ""; // Track previous word to avoid duplication
   
-  for (const word of words) {
+  for (const word of wordsToTranslate) {
     // Skip if this word is the same as the previous (avoid duplication)
     if (word === prevWord) {
       continue;

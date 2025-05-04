@@ -1,70 +1,51 @@
 
 import { getSignImagesForWord } from './databaseService';
 
-interface TranslationResult {
-  words: {
-    text: string;
-    imageUrl: string;
-  }[];
-}
+// List of filler words to filter out in sentences (but not when they appear alone)
+const FILLER_WORDS = [
+  "a", "an", "the", "is", "are", "am", "was", "were", "be", "been", "being",
+  "to", "for", "of", "in", "on", "at", "by", "with",
+  "do", "does", "did",
+  "has", "have", "had",
+  "will", "shall", "would", "should", "may", "might", "must", "can", "could"
+];
 
-// Neural Machine Translation for context-aware text-to-sign translation
-export async function translateToSignLanguage(text: string): Promise<TranslationResult> {
-  // Clean and normalize the text
-  const cleanedText = text.replace(/[^\w\s\.\,\?\!]/gi, '').toLowerCase().trim();
+// Basic sign language translation function that maps words to signs
+export const translateToSignLanguage = async (text: string) => {
+  // Normalize and clean the text
+  const cleanText = text.toLowerCase().trim();
+  if (!cleanText) return { words: [] };
+
+  // Split into individual words
+  const words = cleanText.split(/\s+/).filter(word => word.length > 0);
   
-  if (!cleanedText) {
-    return { words: [] };
-  }
+  // Apply filtering only if this is a multi-word input
+  const wordsToTranslate = words.length === 1 
+    ? words 
+    : words.filter(word => !FILLER_WORDS.includes(word));
   
-  console.log("NMT: Processing input text:", cleanedText);
-  
-  // Split into words while preserving meaningful units
-  const words = cleanedText.split(/\s+/).filter(word => word.length > 0);
-  
-  console.log("NMT: Extracted words:", words);
-  
-  // Process each word with context awareness
-  let translatedSigns: { text: string; imageUrl: string }[] = [];
-  
-  for (const word of words) {
-    console.log("NMT: Processing word:", word);
-    
-    // First, check if we have a full word sign available
-    const wordSigns = getSignImagesForWord(word);
-    
-    // If we got exactly one sign and it's not a "not-found" sign, use it
-    if (wordSigns.length === 1 && !wordSigns[0].imageUrl.includes("not-found")) {
-      translatedSigns.push(wordSigns[0]);
-    } else {
-      // If no sign is found or it's a "not-found" sign, break the word down into letters
-      console.log(`NMT: No sign found for "${word}". Breaking into letters.`);
+  console.log("Basic translation - words after filler removal:", wordsToTranslate);
+
+  // Look up each word in the sign language database
+  const translatedWords = await Promise.all(
+    wordsToTranslate.map(async (word) => {
+      const signs = getSignImagesForWord(word);
       
-      // For each letter in the word, get its sign
-      const letters = word.split('');
-      for (const letter of letters) {
-        const letterSigns = getSignImagesForWord(letter);
-        
-        // Add the letter sign with modified text to indicate it's finger-spelled
-        if (letterSigns && letterSigns.length > 0) {
-          translatedSigns.push({
-            text: `${letter} (finger-spelled)`,
-            imageUrl: letterSigns[0].imageUrl
-          });
-        } else {
-          // If even the letter isn't found, use a not-found image
-          translatedSigns.push({
-            text: letter,
-            imageUrl: "/signs/not-found.gif"
-          });
-        }
+      // If word has a sign, use it
+      if (signs.length > 0 && !signs[0].imageUrl.includes("not-found")) {
+        return {
+          text: word,
+          imageUrl: signs[0].imageUrl,
+        };
       }
-    }
-  }
-  
-  console.log("NMT: Translation complete, signs generated:", translatedSigns.length);
-  
-  return {
-    words: translatedSigns
-  };
-}
+      
+      // If no sign is found, return a not-found image
+      return {
+        text: word,
+        imageUrl: "/signs/not-found.gif",
+      };
+    })
+  );
+
+  return { words: translatedWords };
+};
