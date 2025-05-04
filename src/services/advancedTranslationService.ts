@@ -1,4 +1,3 @@
-
 import { pipeline, env } from '@huggingface/transformers';
 import * as tf from '@tensorflow/tfjs';
 import { getSignImagesForWord } from './databaseService';
@@ -27,8 +26,8 @@ const TRANSLATION_MODEL = "facebook/nllb-200-distilled-600M";
 export async function translateWithTransformer(text: string): Promise<TranslationResult> {
   console.log("Advanced NMT: Processing input text:", text);
   
-  // Clean and normalize the text
-  const cleanedText = text.replace(/[^\w\s\.\,\?\!]/gi, '').toLowerCase().trim();
+  // Clean and normalize the text - remove all special characters except spaces
+  const cleanedText = text.replace(/[^\w\s]/gi, '').toLowerCase().trim();
   
   if (!cleanedText) {
     return { words: [], originalText: text, translatedGrammar: "" };
@@ -73,11 +72,36 @@ export async function translateWithTransformer(text: string): Promise<Translatio
         continue;
       }
       
-      const signImage = getSignImagesForWord(word);
-      translatedSigns.push({
-        text: word,
-        imageUrl: signImage[0]?.imageUrl || `/signs/not-found.gif`
-      });
+      const signImages = getSignImagesForWord(word);
+      
+      if (signImages.length === 1 && !signImages[0].imageUrl.includes("not-found")) {
+        // Single sign for the entire word
+        translatedSigns.push({
+          text: word,
+          imageUrl: signImages[0].imageUrl
+        });
+      } else {
+        // If no sign found for the word or it returns a "not-found" image
+        // Split the word into individual letters
+        console.log(`No sign found for "${word}". Breaking into letters.`);
+        const letters = word.split('');
+        
+        for (const letter of letters) {
+          const letterSign = getSignImagesForWord(letter);
+          
+          if (letterSign.length > 0 && !letterSign[0].imageUrl.includes("not-found")) {
+            translatedSigns.push({
+              text: `${letter} (finger-spelled)`,
+              imageUrl: letterSign[0].imageUrl
+            });
+          } else {
+            translatedSigns.push({
+              text: letter,
+              imageUrl: "/signs/not-found.gif" 
+            });
+          }
+        }
+      }
       
       prevWord = word;
     }
@@ -112,11 +136,36 @@ function fallbackTranslation(cleanedText: string, originalText: string): Transla
       continue;
     }
     
-    const signImage = getSignImagesForWord(word);
-    translatedSigns.push({
-      text: word,
-      imageUrl: signImage[0]?.imageUrl || `/signs/not-found.gif`
-    });
+    const signImages = getSignImagesForWord(word);
+    
+    if (signImages.length === 1 && !signImages[0].imageUrl.includes("not-found")) {
+      // Single sign for the entire word
+      translatedSigns.push({
+        text: word,
+        imageUrl: signImages[0].imageUrl
+      });
+    } else {
+      // If no sign found for the word or it returns a "not-found" image
+      // Split the word into individual letters
+      console.log(`No sign found for "${word}". Breaking into letters.`);
+      const letters = word.split('');
+      
+      for (const letter of letters) {
+        const letterSign = getSignImagesForWord(letter);
+        
+        if (letterSign.length > 0 && !letterSign[0].imageUrl.includes("not-found")) {
+          translatedSigns.push({
+            text: `${letter} (finger-spelled)`,
+            imageUrl: letterSign[0].imageUrl
+          });
+        } else {
+          translatedSigns.push({
+            text: letter,
+            imageUrl: "/signs/not-found.gif" 
+          });
+        }
+      }
+    }
     
     prevWord = word;
   }
@@ -169,7 +218,7 @@ function convertToAslGrammar(text: string): string {
   // Process each sentence according to ASL grammar rules
   const translatedSentences = sentences.map(sentence => {
     // Pre-process to clean up the sentence
-    const cleanedSentence = sentence.trim().replace(/[^\w\s\.\,\?\!]/gi, '');
+    const cleanedSentence = sentence.trim().replace(/[^\w\s]/gi, '');
     if (!cleanedSentence) return "";
     
     // Check if this is a special phrase segment
