@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../services/authService';
@@ -55,7 +56,7 @@ const Login: React.FC = () => {
       await register(registerEmail, registerName, registerPassword);
       toast({
         title: "Registration successful",
-        description: "Your account has been created.",
+        description: "Your account has been created and you're now logged in.",
       });
       navigate('/translator');
     } catch (error: any) {
