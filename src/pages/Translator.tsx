@@ -15,13 +15,22 @@ const Translator: React.FC = () => {
 
   // Reference to the translation result section
   const resultRef = useRef<HTMLDivElement>(null);
+  
+  // Track translation count to force scroll on each new translation
+  const [translationCount, setTranslationCount] = useState(0);
 
   // Check if any results are available to prevent errors
   const hasResults = translationResult && 
                     translationResult.words && 
                     translationResult.words.length > 0;
 
-  // Scroll to results when they become available
+  // Handle new translations - update result and trigger scroll
+  const handleTranslationComplete = (result: any) => {
+    setTranslationResult(result);
+    setTranslationCount(prev => prev + 1); // Increment to trigger scroll effect
+  };
+
+  // Scroll to results when they become available or when a new translation happens
   useEffect(() => {
     if (hasResults && resultRef.current) {
       resultRef.current.scrollIntoView({ 
@@ -29,7 +38,7 @@ const Translator: React.FC = () => {
         block: 'start'
       });
     }
-  }, [hasResults]);
+  }, [hasResults, translationCount]); // Add translationCount to dependencies
 
   return (
     <div className="min-h-screen gradient-bg">
@@ -43,11 +52,11 @@ const Translator: React.FC = () => {
             </h2>
           </section>
 
-          <TranslationForm onTranslationComplete={setTranslationResult} />
+          <TranslationForm onTranslationComplete={handleTranslationComplete} />
 
           {hasResults && (
             <div ref={resultRef}>
-              <TranslationDisplay result={translationResult} />
+              <TranslationDisplay result={translationResult} translationKey={translationCount} />
             </div>
           )}
         </div>

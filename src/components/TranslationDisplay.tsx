@@ -17,9 +17,10 @@ interface TranslationDisplayProps {
     translatedGrammar?: string;
     detectedLanguage?: string;
   };
+  translationKey?: number; // Add this prop to track new translations
 }
 
-export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }) => {
+export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result, translationKey }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true); // Start playing automatically
   const [activeTab, setActiveTab] = useState("signs");
@@ -58,12 +59,15 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
   };
   
   // Reset to first sign and auto-play when new translation comes in
+  // Use translationKey to ensure this runs on every new translation
   useEffect(() => {
     if (hasWords) {
       setCurrentIndex(0);
       setIsPlaying(true);
+      // Always show the Signs tab for new translations
+      setActiveTab("signs");
     }
-  }, [result, hasWords]);
+  }, [result, hasWords, translationKey]);
 
   // If no translation words, don't render anything
   if (!hasWords) {
@@ -101,7 +105,7 @@ export const TranslationDisplay: React.FC<TranslationDisplayProps> = ({ result }
       <Separator />
       <CardContent className="p-6">
         <div className="flex flex-col items-center">
-          <Tabs defaultValue="signs" className="w-full mb-6" onValueChange={setActiveTab}>
+          <Tabs value={activeTab} className="w-full mb-6" onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-3 mb-4">
               <TabsTrigger value="signs" className="text-left">Signs</TabsTrigger>
               <TabsTrigger value="grammar" className="text-left">ASL Grammar</TabsTrigger>
